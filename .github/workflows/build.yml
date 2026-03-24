@@ -141,9 +141,13 @@ jobs:
             "sha=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
         - name: Create auth.json
-          shell: bash
+          shell: pwsh
           run: |
-            echo "{\"steamApiKey\": \"${{ secrets.STEAM_API_KEY }}\"}" > auth.json
+            $content = @{
+              steamApiKey = "${{ secrets.STEAM_API_KEY }}"
+            } | ConvertTo-Json -Compress
+            
+            Set-Content -Path auth.json -Value $content -Encoding UTF8
 
         - name: Cache vcpkg archives directory
           uses: actions/cache@v4
