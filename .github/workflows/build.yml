@@ -164,7 +164,7 @@ jobs:
           if: ${{ steps.vcpkgcache.outputs.cache-hit != true }}
           run: |
             cd vcpkg
-            mkdir -p buildtrees
+            New-Item -ItemType Directory -Force -Path buildtrees | Out-Null
             subst Z: buildtrees
             vcpkg install --x-buildtrees-root=Z:\
 
