@@ -164,7 +164,8 @@ jobs:
           if: ${{ steps.vcpkgcache.outputs.cache-hit != true }}
           run: |
             New-Item -ItemType Directory -Force -Path vcpkg\buildtrees | Out-Null
-            subst Z: vcpkg
+            cmd /c subst Z: /d 2>$null
+            cmd /c subst Z: vcpkg
             Z:\vcpkg install
 
         - name: Configure and build ${{matrix.build_type}}
