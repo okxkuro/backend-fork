@@ -166,7 +166,10 @@ jobs:
             New-Item -ItemType Directory -Force -Path vcpkg\buildtrees | Out-Null
             cmd /c subst Z: /d 2>$null
             cmd /c subst Z: vcpkg
-            Z:\vcpkg install
+            if (-not (Test-Path "Z:\vcpkg.exe")){
+              Z:\bootstrap-vcpkg.bat
+            }
+            Z:\vcpkg.exe install
 
         - name: Configure and build ${{matrix.build_type}}
           run: cmake . --preset x64-${{matrix.build_type}}-win
