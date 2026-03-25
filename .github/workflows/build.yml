@@ -48,9 +48,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/vcpkg/archives
-          key: ${{ runner.os }}-vcpkg-${{steps.vcpkgcommit.outputs.sha}}-${{hashFiles('vcpkg.json')}}
+          key: ${{ runner.os }}-deps-${{steps.vcpkgcommit.outputs.sha}}-${{hashFiles('vcpkg.json')}}
           restore-keys: |
-            ${{ runner.os }}-vcpkg-${{steps.vcpkgcommit.outputs.sha}}
+            ${{ runner.os }}-deps-${{steps.vcpkgcommit.outputs.sha}}
           fail-on-cache-miss: ${{runner.environment != 'self-hosted'}}
 
       - name: Configure ${{matrix.build_type}} ${{matrix.os}}
@@ -164,9 +164,9 @@ jobs:
           id: vcpkgcache
           with:
             path: ${{steps.localappdata.outputs.value}}\vcpkg\archives
-            key: ${{ runner.os }}-vcpkg-${{steps.vcpkgcommit.outputs.sha}}-${{hashFiles('vcpkg.json')}}
+            key: ${{ runner.os }}-deps-${{steps.vcpkgcommit.outputs.sha}}-${{hashFiles('vcpkg.json')}}
             restore-keys: |
-              ${{ runner.os }}-vcpkg-${{steps.vcpkgcommit.outputs.sha}}
+              ${{ runner.os }}-deps-${{steps.vcpkgcommit.outputs.sha}}
             fail-on-cache-miss: ${{runner.environment != 'self-hosted'}}
 
 
