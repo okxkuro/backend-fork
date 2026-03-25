@@ -169,19 +169,6 @@ jobs:
               ${{ runner.os }}-vcpkg-deps-${{steps.vcpkgcommit.outputs.sha}}
             fail-on-cache-miss: ${{runner.environment != 'self-hosted'}}
 
-
-        - name: Build vcpkg dependencies
-          if: ${{ steps.vcpkgcache.outputs.cache-hit != true }}
-          run: |
-            cd vcpkg
-            New-Item -ItemType Directory -Force -Path C:\b | Out-Null
-            New-Item -ItemType Directory -Force -Path  C:\p | Out-Null
-            New-Item -ItemType Directory -Force -Path C:\d | Out-Null
-            if (-not (Test-Path "./vcpkg.exe")){
-              ./bootstrap-vcpkg.bat
-            }
-            ./vcpkg.exe install --x-buildtrees-root=C:\b\ --x-packages-root=C:\p\ --x-downloads-root=C:\d\
-
         - name: Configure and build ${{matrix.build_type}}
           run: cmake . --preset x64-${{matrix.build_type}}-win
 
