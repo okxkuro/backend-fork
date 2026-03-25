@@ -189,10 +189,11 @@ jobs:
           run: cmake --build out/build/x64-${{matrix.build_type}}-win
 
         - name: Make package
+          shell: pwsh
           run: |
             New-Item -ItemType Directory -Force -Path "package" | Out-Null
     
-            Copy-Item -Recurse -Force "out/build/x64-$($env:matrix_build_type)-win/*" "package/"
+            Copy-Item -Recurse -Force "out/build/x64-${{matrix.build_type}}-win/*" "package/"
     
             Remove-Item -Force -ErrorAction SilentlyContinue `
             package\*.h,
