@@ -47,6 +47,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-vcpkg-deps-${{steps.vcpkgcommit.outputs.sha}}
           fail-on-cache-miss: ${{runner.environment != 'self-hosted'}}
+          enableCrossOsArchive: true
+        env:
+          ACTIONS_STEP_DEBUG: true
 
       - name: Configure ${{matrix.build_type}} ${{matrix.os}}
         run: |
@@ -158,6 +161,9 @@ jobs:
             restore-keys: |
               ${{ runner.os }}-vcpkg-deps-${{steps.vcpkgcommit.outputs.sha}}
             fail-on-cache-miss: ${{runner.environment != 'self-hosted'}}
+            enableCrossOsArchive: true
+          env:
+            ACTIONS_STEP_DEBUG: true
 
         - name: Configure and build ${{matrix.build_type}}
           run: cmake . --preset x64-${{matrix.build_type}}-win
