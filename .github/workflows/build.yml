@@ -106,7 +106,7 @@ jobs:
           rm -rf ./vcpkg/packages
 
   build-windows:
-      runs-on: windows-latest
+      runs-on: [self-hosted, windows]
       strategy:
         fail-fast: false
         matrix:
@@ -129,12 +129,6 @@ jobs:
           with:
             arch: x64
 
-        - name: Resolve LOCALAPPDATA
-          id: localappdata
-          shell: powershell
-          run: |
-            echo "value=$env:LOCALAPPDATA" >> $env:GITHUB_OUTPUT
-
         - name: Get vcpkg commit
           id: vcpkgcommit
           shell: pwsh
@@ -156,7 +150,7 @@ jobs:
           uses: actions/cache@v4
           id: vcpkgcache
           with:
-            path: ${{steps.localappdata.outputs.value}}\vcpkg\archives
+            path: ~/AppData/Local/vcpkg/archives
             key: ${{ runner.os }}-vcpkg-deps-${{steps.vcpkgcommit.outputs.sha}}-${{hashFiles('vcpkg.json')}}
             restore-keys: |
               ${{ runner.os }}-vcpkg-deps-${{steps.vcpkgcommit.outputs.sha}}
