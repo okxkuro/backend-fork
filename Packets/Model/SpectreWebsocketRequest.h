@@ -15,9 +15,10 @@ class SpectreWebsocketRequest {
     std::shared_ptr<nlohmann::json> reqJson;
     std::string payloadAsStr;
     int requestId;
+    std::string playerId;
 
   public:
-    SpectreWebsocketRequest(std::string& reqBody);
+    SpectreWebsocketRequest(std::string& reqBody, std::string& playerId);
 
     std::shared_ptr<nlohmann::json> GetPayload() const;
 
@@ -42,4 +43,6 @@ class SpectreWebsocketRequest {
     [[nodiscard]] int GetRequestId() const;
 
     const std::string& GetBody() const;
+
+    const std::string& GetPlayerId() const;
 };

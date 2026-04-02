@@ -3,8 +3,8 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
-SpectreWebsocketRequest::SpectreWebsocketRequest(std::string& reqBody)
-    : reqBody(reqBody) {
+SpectreWebsocketRequest::SpectreWebsocketRequest(std::string& reqBody, std::string& playerId)
+    : reqBody(reqBody), playerId(playerId) {
     nlohmann::json reqjson = nlohmann::json::parse(reqBody);
     reqJson = std::make_shared<nlohmann::json>(reqjson);
     try {
@@ -39,4 +39,8 @@ SpectreRpcType SpectreWebsocketRequest::GetRequestType() const {
 
 int SpectreWebsocketRequest::GetRequestId() const {
     return requestId;
+}
+
+const std::string& SpectreWebsocketRequest::GetPlayerId() const {
+    return playerId;
 }

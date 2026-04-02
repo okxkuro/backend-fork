@@ -5,16 +5,16 @@
 SetPlayerPresenceHandler::SetPlayerPresenceHandler(SpectreRpcType rpcType) : WebsocketPacketProcessor(rpcType) {
 }
 
-void SetPlayerPresenceHandler::Process(SpectreWebsocketRequest& packet, SpectreWebsocket& sock) {
+std::optional<WebsocketPayload> SetPlayerPresenceHandler::Process(SpectreWebsocketRequest& packet) {
     std::unique_ptr<SetPresenceRequest> req = packet.GetPayloadAsMessage<SetPresenceRequest>();
 
-    std::unique_ptr<PlayerPresence> presence = PlayerDatabase::Get().GetField<PlayerPresence>(FieldKey::PLAYER_PRESENCE, sock.GetPlayerId());
+    std::unique_ptr<PlayerPresence> presence = PlayerDatabase::Get().GetField<PlayerPresence>(FieldKey::PLAYER_PRESENCE, packet.GetPlayerId());
     presence->set_basicpresence(req->basicpresence());
-    UpdatePlayerPresence(*presence, sock.GetPlayerId());
+    UpdatePlayerPresence(*presence, packet.GetPlayerId());
 
-    std::shared_ptr<json> response = packet.GetBaseJsonResponse();
-    (*response)["payload"]["response"] = "Ok";
-    sock.SendPacket(response);
+    nlohmann::json res{};
+    res["response"] = "Ok";
+    return res;
 }
 
 void UpdatePlayerPresence(PlayerPresence& newPresence, const std::string& playerId) {

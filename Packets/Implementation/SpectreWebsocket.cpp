@@ -56,7 +56,7 @@ SpectreWebsocket::SpectreWebsocket(restinio::request_handle_t initialRequest)
 };
 
 void SpectreWebsocket::OnReceiveWebsocketMessage(rws::ws_handle_t websocketHandler, rws::message_handle_t message) {
-    SpectreWebsocketRequest request(message->payload());
+    SpectreWebsocketRequest request(message->payload(), playerId);
     WebsocketPacketProcessor* processor = WebsocketPacketProcessor::GetProcessorForRpc(request.GetRequestType());
     if (processor == nullptr) {
         spdlog::warn("Failed to find websocket message for rpc type {}", request.GetRequestType().GetName());

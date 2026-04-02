@@ -5,10 +5,10 @@
 
 class StaticResponseProcessorWS : public WebsocketPacketProcessor {
   private:
-    std::shared_ptr<json> staticRes;
+    std::shared_ptr<nlohmann::json> staticRes;
 
   public:
-    StaticResponseProcessorWS(const SpectreRpcType rpcType, const std::shared_ptr<json>& res)
+    StaticResponseProcessorWS(const SpectreRpcType rpcType, const std::shared_ptr<nlohmann::json>& res)
         : WebsocketPacketProcessor(rpcType), staticRes(res){};
 
     std::optional<WebsocketPayload> Process(SpectreWebsocketRequest& packet) override;

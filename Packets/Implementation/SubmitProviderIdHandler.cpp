@@ -14,7 +14,7 @@ static std::string GetSteamApiKey() {
     std::ifstream authFile(ResourcesUtilities::GetResourcesFolder() / "../" / "auth.json");
     std::stringstream ss;
     ss << authFile.rdbuf();
-    json authJson = json::parse(ss.str());
+    nlohmann::json authJson = nlohmann::json::parse(ss.str());
     return authJson.at("steamApiKey").get<std::string>();
 }
 
@@ -23,7 +23,7 @@ std::optional<restinio::response_builder_t<restinio::restinio_controlled_output_
         return req->create_response(restinio::status_bad_request()).set_body("no steam api key provided");
     }
 
-    const auto body = json::parse(req->body(), nullptr, false);
+    const auto body = nlohmann::json::parse(req->body(), nullptr, false);
     if (body.is_discarded() || !body.contains("providerId") || !body.at("providerId").is_string()) {
         return req->create_response(restinio::status_bad_request()).set_body("err: provider id required");
     }

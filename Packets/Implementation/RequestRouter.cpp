@@ -25,7 +25,7 @@ restinio::request_handling_status_t RequestRouter::NonMatchedHTTPProcessor(resti
 void RequestRouter::CreateRouter(uint16_t port) {
     auto router = std::make_unique<restinio::router::express_router_t<>>();
     router->non_matched_request_handler([](auto req) {
-        return NonMatchedHTTPProcessor(req, websocketConnections);
+        return NonMatchedHTTPProcessor(req);
     });
     routers[port] = std::move(router);
 }

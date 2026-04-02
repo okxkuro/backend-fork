@@ -34,7 +34,7 @@ static const AuthCfg& GetAuthCfg() {
         AuthCfg c{};
         auto tryPath = [&](const char* p) {
             if (std::ifstream f(p); f.is_open()) {
-                auto j = json::parse(f, nullptr, false);
+                auto j = nlohmann::json::parse(f, nullptr, false);
                 if (!j.is_discarded() && j.contains("steamApiKey") && j.at("steamApiKey").is_string()) {
                     c.steamApiKey = j.at("steamApiKey").get<std::string>();
                 }
@@ -91,11 +91,11 @@ std::optional<restinio::response_builder_t<restinio::restinio_controlled_output_
     const std::string disc = prof ? prof->displayname().discriminator() : "0000";
     const std::string socialId = playerId;
 
-    json tokens = {
+    nlohmann::json tokens = {
         {"pragmaGameToken", BuildJwt("GAME", playerId, socialId, display, disc)},
         {"pragmaSocialToken", BuildJwt("SOCIAL", playerId, socialId, display, disc)}};
 
-    json out = {{"pragmaTokens", tokens}};
+    nlohmann::json out = {{"pragmaTokens", tokens}};
     return req->create_response().set_body(out.dump());
 }
 

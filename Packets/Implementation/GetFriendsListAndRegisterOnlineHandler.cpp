@@ -9,10 +9,10 @@ GetFriendsListAndRegisterOnlineHandler::GetFriendsListAndRegisterOnlineHandler(S
 
 }
 
-void GetFriendsListAndRegisterOnlineHandler::Process(SpectreWebsocketRequest& packet, SpectreWebsocket& sock) {
-    std::unique_ptr<FriendsList> friendsList = PlayerDatabase::Get().GetField<FriendsList>(FieldKey::FRIENDS_LIST, sock.GetPlayerId());
-    std::unique_ptr<PlayerPresence> presence = PlayerDatabase::Get().GetField<PlayerPresence>(FieldKey::PLAYER_PRESENCE, sock.GetPlayerId());
+std::optional<WebsocketPayload> GetFriendsListAndRegisterOnlineHandler::Process(SpectreWebsocketRequest& packet) {
+    std::unique_ptr<FriendsList> friendsList = PlayerDatabase::Get().GetField<FriendsList>(FieldKey::FRIENDS_LIST, packet.GetPlayerId());
+    std::unique_ptr<PlayerPresence> presence = PlayerDatabase::Get().GetField<PlayerPresence>(FieldKey::PLAYER_PRESENCE, packet.GetPlayerId());
     presence->set_basicpresence(Online);
-    UpdatePlayerPresence(*presence, sock.GetPlayerId());
-    sock.SendPacket(*friendsList, packet.GetResponseType(), packet.GetRequestId());
+    UpdatePlayerPresence(*presence, packet.GetPlayerId());
+    return *friendsList;
 }
