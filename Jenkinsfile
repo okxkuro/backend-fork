@@ -179,6 +179,8 @@ pipeline {
                                     run-clang-tidy \$FILES main.cpp StaticHTTPPackets.cpp StaticWSPackets.cpp -fix -p out/build/x64-debug-linux -extra-arg=-Werror
                                 """
                             }
+			    post {
+				always {
                             stage("Create diff") {
                                 sh """
                                     if ! git diff --quiet; then
@@ -199,6 +201,8 @@ pipeline {
                                     sh "exit 1"
                                 }
                             }
+			    }
+			    }
                         }
                     }
                 }
