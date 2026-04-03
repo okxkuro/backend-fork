@@ -49,9 +49,9 @@ PartyDatabase::PartyDatabase(const fs::path& path)
         GetRaw()->exec("ALTER TABLE " + GetTableName() + " ADD COLUMN PartyVersion TEXT;");
     }
 
-    AddPrototype<BroadcastPartyExtraInfo>(FieldKey::PARTY_EXTRA_BROADCAST_INFO);
-    AddPrototype<BroadcastPrivatePartyExtraInfo>(FieldKey::PARTY_PRIVATE_EXTRA_BROADCAST_INFO);
-    AddPrototype<PartyMembers>(FieldKey::PARTY_MEMBERS);
+    AddPrototype(FieldKey::PARTY_EXTRA_BROADCAST_INFO, DatabaseFieldData(FieldKey::PARTY_EXTRA_BROADCAST_INFO, "extraBroadcastInfo"));
+    AddPrototype(FieldKey::PARTY_PRIVATE_EXTRA_BROADCAST_INFO, DatabaseFieldData(FieldKey::PARTY_PRIVATE_EXTRA_BROADCAST_INFO, "privateExtraBroadcastInfo"));
+    AddPrototype(FieldKey::PARTY_MEMBERS, DatabaseFieldData(FieldKey::PARTY_MEMBERS, "partyMembers"));
 }
 
 PartyDatabase PartyDatabase::inst("playerdata.sqlite");

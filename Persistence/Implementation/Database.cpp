@@ -3,8 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <utility>
 
-std::unordered_map<FieldKey, const std::string> Database::classNames;
-std::unordered_map<FieldKey, std::unique_ptr<const pbuf::Message>> Database::defaultFieldValues;
+std::unordered_map<FieldKey, DatabaseFieldData> Database::fieldData{};
 
 Database::Database(const fs::path& dbPath, std::string tableName, std::string keyFieldName, const std::string& /*keyFieldType*/)
     : filename(dbPath), dbRaw(dbPath.string(), sql::OPEN_READWRITE | sql::OPEN_CREATE),
@@ -51,7 +50,7 @@ void Database::SetField(sql::Statement& statement, FieldKey key, const pbuf::Mes
         statement.bind(dataBindIndex, bytes.data(), bytes.size());
         statement.exec();
     } catch (const std::exception& e) {
-        spdlog::error("Failed to set field with FieldKey {}: {}", classNames.at(key), e.what());
+        spdlog::error("Failed to set field with FieldKey {}: {}", fieldData.at(key).GetFieldName(), e.what());
         throw;
     }
 }
@@ -73,7 +72,7 @@ bool Database::IsFieldPopulated(FieldKey key, const std::string& dbKey) {
 }
 
 const std::string& Database::GetFieldName(FieldKey key) {
-    return classNames.at(key);
+    return fieldData.at(key).GetFieldName();
 }
 
 const std::string& Database::GetTableName() {
