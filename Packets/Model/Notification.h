@@ -10,7 +10,7 @@ class Notification {
 
   public:
     Notification(const SpectreRpcType& notificationType, const google::protobuf::Message& notificationData);
-    Notification(const SpectreRpcType& notificationType, const std::string& notificationId, const std::string& notificationData);
+    Notification(const SpectreRpcType& notificationType, const std::string& notificationId, const std::string& notificationPayload);
     const SpectreRpcType& GetNotificationType() const;
     const std::string& GetNotificationId() const;
     const std::string& GetNotificationData() const;
