@@ -212,7 +212,7 @@ pipeline {
                 axes {
                     axis {
                         name 'OS'
-                        value 'linux', 'windows'
+                        values 'linux', 'windows'
                     }
                 }
                 agent { label '${OS}'}
@@ -222,7 +222,7 @@ pipeline {
                             copyArtifacts(
                                 projectName: env.JOB_NAME,
                                 selector: specific(env.BUILD_NUMBER),
-                                filter: 'package-release-${OS}/**',
+                                filter: "package-release-${OS}/**",
                                 target: 'pragmabackend'
                             )
                         }
@@ -233,7 +233,7 @@ pipeline {
                                 if(isUnix()){
                                     sh "pragmabackend/tests/tests"
                                 } else {
-                                    bat "pragmabackend\tests\tests.exe"
+                                    bat "pragmabackend\\tests\\tests.exe"
                                 }
                             }
                         }
