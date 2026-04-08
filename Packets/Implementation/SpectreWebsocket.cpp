@@ -9,6 +9,7 @@
 #include <jwt-cpp/traits/nlohmann-json/traits.h>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <utility>
 
 std::unordered_map<std::string, SpectreWebsocket*> SpectreWebsocket::connectionsByPlayerId{};
 std::mutex SpectreWebsocket::connectionsMapMutex{};
@@ -48,7 +49,7 @@ static std::string DecodePlayerIdNoverify(const std::string& token) {
     return {};
 }
 
-SpectreWebsocket::SpectreWebsocket(restinio::request_handle_t initialRequest)
+SpectreWebsocket::SpectreWebsocket(const restinio::request_handle_t& initialRequest)
     : curSequenceNumber(0) {
     const auto bearer = ExtractBearer(initialRequest->header().get_field_or("Authorization", ""));
     const auto pid = bearer.empty() ? std::string() : DecodePlayerIdNoverify(bearer);
@@ -62,16 +63,16 @@ SpectreWebsocket::SpectreWebsocket(restinio::request_handle_t initialRequest)
     std::unique_ptr<SavedNotificationData> notificationsFromDisk = PlayerDatabase::Get().GetField<SavedNotificationData>(FieldKey::NOTIFICATION_DATA, playerId);
     for (int i = 0; i < notificationsFromDisk->notificationstodeliver_size(); i++) {
         const SavedNotification& currentNotif = notificationsFromDisk->notificationstodeliver(i);
-        notificationsToDeliver.push_back(Notification(SpectreRpcType(currentNotif.rpctype()), currentNotif.notificationid(), currentNotif.notificationdata()));
+        notificationsToDeliver.emplace_back(SpectreRpcType(currentNotif.rpctype()), currentNotif.notificationid(), currentNotif.notificationdata());
     }
     notificationWorkerThread = std::jthread([this](std::stop_token st) {
-        NotificationThread(st);
+        NotificationThread(std::move(st));
     });
     std::unique_lock connectionsMapLock(connectionsMapMutex);
     connectionsByPlayerId.insert_or_assign(playerId, this);
 }
 
-void SpectreWebsocket::NotificationThread(std::stop_token st) {
+void SpectreWebsocket::NotificationThread(const std::stop_token& st) {
     while (!st.stop_requested()) {
         if (!notificationQueueLock.try_lock()) {
             continue;
@@ -95,7 +96,7 @@ void SpectreWebsocket::NotificationThread(std::stop_token st) {
     }
 }
 
-void SpectreWebsocket::OnReceiveWebsocketMessage(rws::ws_handle_t websocketHandler, rws::message_handle_t message) {
+void SpectreWebsocket::OnReceiveWebsocketMessage(const rws::ws_handle_t& websocketHandler, const rws::message_handle_t& message) {
     if (message->opcode() == rws::opcode_t::ping_frame || message->opcode() == rws::opcode_t::pong_frame
         || message->opcode() == rws::opcode_t::connection_close_frame) {
         return;
@@ -142,7 +143,7 @@ std::string SpectreWebsocket::FormulateFinalResponse(const std::string& resPaylo
 }
 
 std::string SpectreWebsocket::FormulateFinalNotification(Notification& notification) {
-    return "{\"sequenceNumber\":" + std::to_string(curSequenceNumber.fetch_add(1)) + ",\"notification\":{\"type\":\"" + notification.GetNotificationType().GetName() + "\",\"payload\":" + notification.GetNotificationData() + "}}";
+    return "{\"sequenceNumber\":" + std::to_string(curSequenceNumber.fetch_add(1)) + R"(,"notification":{"type":")" + notification.GetNotificationType().GetName() + R"(","payload":)" + notification.GetNotificationData() + "}}";
 }
 
 const std::string& SpectreWebsocket::GetPlayerId() {
@@ -158,7 +159,7 @@ std::optional<SpectreWebsocket*> SpectreWebsocket::GetConnectionForPlayer(const 
     return it->second;
 }
 
-void SpectreWebsocket::ScheduleNotification(Notification notif) {
+void SpectreWebsocket::ScheduleNotification(const Notification& notif) {
     std::unique_lock lock(notificationQueueLock);
     notificationsToDeliver.push_back(notif);
 }

@@ -3,6 +3,6 @@
 HeartbeatProcessor::HeartbeatProcessor(const SpectreRpcType& rpcType)
         : WebsocketPacketProcessor(rpcType){};
 
-std::optional<WebsocketPayload> HeartbeatProcessor::Process(SpectreWebsocketRequest& packet) {
+std::optional<WebsocketPayload> HeartbeatProcessor::Process(SpectreWebsocketRequest&  /*packet*/) {
     return nlohmann::json::object();
 }

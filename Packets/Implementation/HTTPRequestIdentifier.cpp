@@ -1,9 +1,10 @@
 #include "spdlog/spdlog.h"
 
 #include <HTTPRequestIdentifier.h>
+#include <utility>
 
 HTTPRequestIdentifier::HTTPRequestIdentifier(std::string route, HTTPRequestType reqType)
-    : route(route), reqType(reqType){
+    : route(std::move(std::move(route))), reqType(reqType){
 
 }
 

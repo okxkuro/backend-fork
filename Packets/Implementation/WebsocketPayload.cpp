@@ -1,12 +1,13 @@
 #include <WebsocketPayload.h>
 #include <google/protobuf/util/json_util.h>
 #include <spdlog/spdlog.h>
+#include <utility>
 
 const std::string& WebsocketPayload::GetPayload() const {
     return payload;
 }
 
-WebsocketPayload::WebsocketPayload(const std::string& payload) : payload(payload) {
+WebsocketPayload::WebsocketPayload(std::string  payload) : payload(std::move(payload)) {
 
 }
 

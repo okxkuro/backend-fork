@@ -2,6 +2,7 @@
 
 #include <Notification.h>
 #include <google/protobuf/util/json_util.h>
+#include <utility>
 #include <uuid.h>
 
 static google::protobuf::util::JsonPrintOptions opts = {
@@ -18,8 +19,8 @@ Notification::Notification(const SpectreRpcType& notificationType, const google:
     }
 }
 
-Notification::Notification(const SpectreRpcType& notificationType, const std::string& notificationId, const std::string& notificationPayload)
-    : notificationType(notificationType), notificationId(notificationId), notificationData(notificationPayload) {
+Notification::Notification(const SpectreRpcType& notificationType, std::string  notificationId, std::string  notificationPayload)
+    : notificationType(notificationType), notificationId(std::move(notificationId)), notificationData(std::move(notificationPayload)) {
 
 }
 

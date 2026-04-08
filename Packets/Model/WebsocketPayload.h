@@ -8,7 +8,7 @@ private:
     std::string payload;
     public:
     WebsocketPayload(const google::protobuf::Message& message);
-    WebsocketPayload(const std::string& payload);
+    WebsocketPayload(std::string  payload);
     WebsocketPayload(const nlohmann::json& json);
     [[nodiscard]] const std::string& GetPayload() const;
 };

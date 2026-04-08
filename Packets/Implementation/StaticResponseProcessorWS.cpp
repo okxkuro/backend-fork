@@ -6,6 +6,6 @@ StaticResponseProcessorWS::StaticResponseProcessorWS(const SpectreRpcType rpcTyp
 
 }
 
-std::optional<WebsocketPayload> StaticResponseProcessorWS::Process(SpectreWebsocketRequest& packet) {
+std::optional<WebsocketPayload> StaticResponseProcessorWS::Process(SpectreWebsocketRequest&  /*packet*/) {
     return staticRes;
 }

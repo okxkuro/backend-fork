@@ -22,7 +22,7 @@ std::vector<SpectreRpcType> skipRpcTypes = []() {
     std::ifstream testSkipFile(ResourcesUtilities::GetResourcesFolder() / "testrequests" / "wsSkipTests.txt");
     std::string line;
     while (std::getline(testSkipFile, line)) {
-        rpcTypes.push_back(SpectreRpcType(line));
+        rpcTypes.emplace_back(line);
     }
     return rpcTypes;
 }();

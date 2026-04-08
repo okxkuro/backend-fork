@@ -23,12 +23,12 @@ private:
     std::deque<Notification> notificationsToDeliver;
     std::mutex notificationQueueLock;
     std::jthread notificationWorkerThread;
-    void NotificationThread(std::stop_token st);
+    void NotificationThread(const std::stop_token& st);
 
   public:
-    explicit SpectreWebsocket(restinio::request_handle_t initiationRequest);
+    explicit SpectreWebsocket(const restinio::request_handle_t& initialRequest);
 
-    void OnReceiveWebsocketMessage(rws::ws_handle_t websocketHandler, rws::message_handle_t message);
+    void OnReceiveWebsocketMessage(const rws::ws_handle_t& websocketHandler, const rws::message_handle_t& message);
 
     std::string FormulateFinalResponse(const std::shared_ptr<json>& res);
 
@@ -40,7 +40,7 @@ private:
 
     const std::string& GetPlayerId();
 
-    void ScheduleNotification(Notification notif);
+    void ScheduleNotification(const Notification& notif);
 
     static std::optional<SpectreWebsocket*> GetConnectionForPlayer(const std::string& playerId);
     static void ScheduleNotificationForPlayer(const std::string& playerId, Notification notif);

@@ -8,7 +8,7 @@ UpdateItemV4Processor::UpdateItemV4Processor(SpectreRpcType rpcType)
     : WebsocketPacketProcessor(rpcType) {
 }
 
-static nlohmann::json SendSuccessfulUpdate(SpectreWebsocketRequest& packet) {
+static nlohmann::json SendSuccessfulUpdate() {
     nlohmann::json res{};
     res["success"] = true;
     return res;
@@ -32,7 +32,7 @@ std::optional<WebsocketPayload> UpdateItemV4Processor::Process(SpectreWebsocketR
         }
         if (curItem == nullptr) {
             spdlog::warn("Couldn't find item with instance id {} in a item update request, skipping", itemUpdate->instanceditemupdate().instanceid());
-            return SendSuccessfulUpdate(packet);
+            return SendSuccessfulUpdate();
         }
         if (itemUpdate->instanceditemupdate().ext().setviewed()) {
             curItem->mutable_ext()->set_viewed(true);
@@ -52,10 +52,10 @@ std::optional<WebsocketPayload> UpdateItemV4Processor::Process(SpectreWebsocketR
         }
         if (curItem == nullptr) {
             spdlog::warn("Couldn't find item with instance id {} in a item update request, skipping", itemUpdate->stackeditemupdate().instanceid());
-            return SendSuccessfulUpdate(packet);
+            return SendSuccessfulUpdate();
         }
         curItem->set_amount(itemUpdate->stackeditemupdate().newamount());
     }
     PlayerDatabase::Get().SetField(FieldKey::PLAYER_INVENTORY, playerI.get(), packet.GetPlayerId());
-    return SendSuccessfulUpdate(packet);
+    return SendSuccessfulUpdate();
 }

@@ -19,7 +19,7 @@ private:
     static std::unordered_map<uint16_t, std::unique_ptr<restinio::router::express_router_t<>>> routers;
     static std::vector<restinio::running_server_handle_t<RestinioServerTraits>> servers;
     static std::vector<std::shared_ptr<SpectreWebsocket>> websocketConnections;
-    static restinio::request_handling_status_t NonMatchedHTTPProcessor(restinio::request_handle_t req);
+    static restinio::request_handling_status_t NonMatchedHTTPProcessor(const restinio::request_handle_t& req);
 public:
     RequestRouter() = delete;
     static void CreateRouter(uint16_t port);

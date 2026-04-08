@@ -65,8 +65,6 @@ static uint16_t socialPort = 8082;
 static uint16_t wsPort = 80;
 
 namespace beast = boost::beast;
-namespace http = beast::http;
-namespace websocket = beast::websocket;
 namespace fs = std::filesystem;
 
 static std::shared_ptr<spdlog::logger> logger;
