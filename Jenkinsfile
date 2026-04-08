@@ -133,29 +133,17 @@ pipeline {
         stage("Build docker server container"){
             agent { label 'host && windows' }
             steps {
-                script {
-                    stage("Checkout"){
-                        checkout scm
-                    }
-                    stage("Unstash linux build"){
-                        dir('out/build'){
-                            bat "if exist x64-release-linux rmdir /s /q x64-release-linux"
-                            bat "if exist package-release-linux rmdir /s /q package-release-linux"
-                            unstash 'linuxbuild'
-                            bat "rename package-release-linux x64-release-linux"
-                        }
-                    }
-                    stage("Build docker image"){
-                        bat "docker build -t pragmabackend:latest ."
-                    }
-                    stage("Save image to file"){
-                        bat "docker save pragmabackend:latest -o pragmabackend-docker.tar"
-                    }
-                    stage("Archive image"){
-                        archiveArtifacts artifacts: 'pragmabackend-docker.tar', fingerprint: true
-                        bat "del pragmabackend-docker.tar"
-                    }
+                checkout scm
+                dir('out/build'){
+                    bat "if exist x64-release-linux rmdir /s /q x64-release-linux"
+                    bat "if exist package-release-linux rmdir /s /q package-release-linux"
+                    unstash 'linuxbuild'
+                    bat "rename package-release-linux x64-release-linux"
                 }
+                bat "docker build -t pragmabackend:latest ."
+                bat "docker save pragmabackend:latest -o pragmabackend-docker.tar"
+                archiveArtifacts artifacts: 'pragmabackend-docker.tar', fingerprint: true
+                bat "del pragmabackend-docker.tar"
             }
         }
 
