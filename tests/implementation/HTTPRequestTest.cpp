@@ -29,7 +29,7 @@ const std::vector<std::string>& GetSkipRoutes() {
 }
 
 void RunHTTPTest(json testJson, json& outResponse) {
-    if (std::ranges::find(GetSkipRoutes(), testJson.at("path").get<std::string>()) != GetSkipRoutes()S.end()) {
+    if (std::ranges::find(GetSkipRoutes(), testJson.at("path").get<std::string>()) != GetSkipRoutes().end()) {
         GTEST_SKIP() << "Route " << testJson.at("path") << "is in list of skip routes";
     }
     std::cout << "Test info: " << '\n';
