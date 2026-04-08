@@ -65,8 +65,8 @@ SpectreWebsocket::SpectreWebsocket(const restinio::request_handle_t& initialRequ
         const SavedNotification& currentNotif = notificationsFromDisk->notificationstodeliver(i);
         notificationsToDeliver.emplace_back(SpectreRpcType(currentNotif.rpctype()), currentNotif.notificationid(), currentNotif.notificationdata());
     }
-    notificationWorkerThread = std::jthread([this](std::stop_token st) {
-        NotificationThread(std::move(st));
+    notificationWorkerThread = std::jthread([this](const std::stop_token& st) {
+        NotificationThread(st);
     });
     std::unique_lock connectionsMapLock(connectionsMapMutex);
     connectionsByPlayerId.insert_or_assign(playerId, this);
@@ -163,7 +163,7 @@ void SpectreWebsocket::ScheduleNotification(const Notification& notif) {
     notificationsToDeliver.push_back(notif);
 }
 
-void SpectreWebsocket::ScheduleNotificationForPlayer(const std::string& playerId, Notification notif) {
+void SpectreWebsocket::ScheduleNotificationForPlayer(const std::string& playerId, const Notification& notif) {
     std::optional<SpectreWebsocket*> connection = GetConnectionForPlayer(playerId);
     if (!connection.has_value()) {
         // player is not logged in, save the notification to disk instead
@@ -174,6 +174,6 @@ void SpectreWebsocket::ScheduleNotificationForPlayer(const std::string& playerId
         newNotif->set_rpctype(notif.GetNotificationType().GetName());
         PlayerDatabase::Get().SetField(FieldKey::NOTIFICATION_DATA, notifData.get(), playerId);
     } else {
-        connection.value()->ScheduleNotification(std::move(notif));
+        connection.value()->ScheduleNotification(notif);
     }
 }

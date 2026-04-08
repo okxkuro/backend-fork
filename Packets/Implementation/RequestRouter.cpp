@@ -16,8 +16,8 @@ restinio::request_handling_status_t RequestRouter::NonMatchedHTTPProcessor(const
         websocketConnections.emplace_back(newWS);
         // Upgrade the websocket connection and bind the message handler to the new SpectreWebsocket instance
         rws::ws_handle_t websocketHandle = rws::upgrade<RestinioServerTraits>(*req, rws::activation_t::immediate,
-                                                                              [newWS](rws::ws_handle_t wsHandle, rws::message_handle_t wsMessage) {
-                                                                                  newWS->OnReceiveWebsocketMessage(std::move(wsHandle), std::move(wsMessage));
+                                                                              [newWS](const rws::ws_handle_t& wsHandle, const rws::message_handle_t& wsMessage) {
+                                                                                  newWS->OnReceiveWebsocketMessage(wsHandle, wsMessage);
                                                                               });
         websocketConnections.back()->websocketHandle = websocketHandle;
         return restinio::request_accepted();
@@ -45,15 +45,15 @@ void RequestRouter::RegisterHTTPProcessor(uint16_t port, HTTPPacketProcessor* pr
         return;
     }
     if (processor->GetMethod() == HTTPRequestType::GET) {
-        router->second->http_get(processor->GetRoute(), [processor](auto&& PH1, auto&& PH2) { return processor->ProcessResolveOptional(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
+        router->second->http_get(processor->GetRoute(), [processor](auto&& pH1, auto&& pH2) { return processor->ProcessResolveOptional(std::forward<decltype(pH1)>(pH1), std::forward<decltype(pH2)>(pH2)); });
     } else if (processor->GetMethod() == HTTPRequestType::POST) {
-        router->second->http_post(processor->GetRoute(), [processor](auto&& PH1, auto&& PH2) { return processor->ProcessResolveOptional(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
+        router->second->http_post(processor->GetRoute(), [processor](auto&& pH1, auto&& pH2) { return processor->ProcessResolveOptional(std::forward<decltype(pH1)>(pH1), std::forward<decltype(pH2)>(pH2)); });
     } else if (processor->GetMethod() == HTTPRequestType::PUT) {
-        router->second->http_put(processor->GetRoute(), [processor](auto&& PH1, auto&& PH2) { return processor->ProcessResolveOptional(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
+        router->second->http_put(processor->GetRoute(), [processor](auto&& pH1, auto&& pH2) { return processor->ProcessResolveOptional(std::forward<decltype(pH1)>(pH1), std::forward<decltype(pH2)>(pH2)); });
     } else if (processor->GetMethod() == HTTPRequestType::DEL) {
-        router->second->http_delete(processor->GetRoute(), [processor](auto&& PH1, auto&& PH2) { return processor->ProcessResolveOptional(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
+        router->second->http_delete(processor->GetRoute(), [processor](auto&& pH1, auto&& pH2) { return processor->ProcessResolveOptional(std::forward<decltype(pH1)>(pH1), std::forward<decltype(pH2)>(pH2)); });
     } else if (processor->GetMethod() == HTTPRequestType::HEAD) {
-        router->second->http_head(processor->GetRoute(), [processor](auto&& PH1, auto&& PH2) { return processor->ProcessResolveOptional(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
+        router->second->http_head(processor->GetRoute(), [processor](auto&& pH1, auto&& pH2) { return processor->ProcessResolveOptional(std::forward<decltype(pH1)>(pH1), std::forward<decltype(pH2)>(pH2)); });
     } else {
         spdlog::error("Failed to register HTTP processor for port {} and route {} due to an unrecognized HTTP method", port, processor->GetRoute());
     }

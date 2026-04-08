@@ -44,5 +44,5 @@ class SpectreWebsocket {
     void ScheduleNotification(const Notification& notif);
 
     static std::optional<SpectreWebsocket*> GetConnectionForPlayer(const std::string& playerId);
-    static void ScheduleNotificationForPlayer(const std::string& playerId, Notification notif);
+    static void ScheduleNotificationForPlayer(const std::string& playerId, const Notification& notif);
 };
