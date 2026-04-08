@@ -1,8 +1,8 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 WORKDIR /server
 
-COPY build/out/x64-release-linux/ .
+COPY out/build/x64-release-linux/ .
 RUN chmod +x ./pragmabackend
 EXPOSE 8081
 EXPOSE 8082

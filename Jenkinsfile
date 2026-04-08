@@ -112,6 +112,14 @@ pipeline {
                             }
                         }
                     }
+	            stage("Stash for dockerfile"){
+			when {
+			    expression { BUILD_TYPE = "release" && OS = "linux" }
+			}
+			steps {
+			    stash name: 'linuxbuild', includes: 'out/build/x64-release-linux/**'
+			}
+		    }
                 }
             }
         }
@@ -255,36 +263,31 @@ pipeline {
             }
         }
 
-        /*stage("Build docker image"){
-            agent { label 'host' }
+        stage("Build docker server container"){
+            agent { label 'host && windows' }
             steps {
                 script {
                     stage("Checkout"){
-                        steps {
-                            checkout scm
+                        checkout scm
+                    }
+                    stage("Unstash linux build"){
+                        dir('out/build/x64-release-linux'){
+                            unstash 'linuxbuild'
                         }
                     }
-                    stage("Download x64-release-linux artifact"){
-                        steps {
-                            copyArtifacts(projectName: env.JOB_NAME, selector: specific(env.BUILD_NUMBER), filter: 'x64-release-linux/**', target: 'out/build/x64-release-linux/')
-                        }
+                    stage("Build docker image"){
+                        bat "docker build -t pragmabackend:latest ."
                     }
-                    stage("Build image"){
-                        steps {
-                            script {
-                                if(isUnix()){
-                                    sh "docker build -t pragmabackend:latest ."
-                                } else {
-                                    bat "docker build -t pragmabackend:latest ."
-                                }
-
-                            }
-                        }
+                    stage("Save image to file"){
+                        bat "docker save pragmabackend:latest -o pragmabackend-docker.tar"
+                    }
+                    stage("Archive image"){
+                        archiveArtifacts artifacts: 'pragmabackend-docker.tar', fingerprint: true
+                        bat "del pragmabackend-docker.tar"
                     }
                 }
             }
-
-        }*/
+        }
     }
     post {
         always {
