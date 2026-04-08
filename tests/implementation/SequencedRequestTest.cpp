@@ -75,7 +75,7 @@ TEST_P(SequencedRequestTest, ResponseValidation) {
         std::string testJsonStr = ss.str();
         json testJson = json::parse(testJsonStr);
         if (testJson.contains("rpcType")) {
-            if (std::ranges::find(skipRpcTypes, SpectreRpcType(testJson.at("rpcType").get<std::string>())) != skipRpcTypes.end()) {
+            if (std::ranges::find(GetSkipRpcTypes(), SpectreRpcType(testJson.at("rpcType").get<std::string>())) != GetSkipRpcTypes().end()) {
                 GTEST_SKIP() << "Skipping sequenced test due to rpc type " << testJson.at("rpcType") << " that is on the skip list";
             }
             // ws request
@@ -84,7 +84,7 @@ TEST_P(SequencedRequestTest, ResponseValidation) {
             RunWebsocketTest(testJson, out);
             responses.push_back(out["response"]["payload"]);
         } else {
-            if (std::ranges::find(skipRoutes, testJson.at("path").get<std::string>()) != skipRoutes.end()) {
+            if (std::ranges::find(GetSkipRoutes(), testJson.at("path").get<std::string>()) != GetSkipRoutes().end()) {
                 GTEST_SKIP() << "Skipping sequenced test due to route " << testJson.at("path") << " that is on the skip list";
             }
             // http request

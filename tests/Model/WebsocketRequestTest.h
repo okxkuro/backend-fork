@@ -6,7 +6,7 @@
 namespace fs = std::filesystem;
 using json = nlohmann::ordered_json;
 
-extern std::vector<SpectreRpcType> skipRpcTypes;
+std::vector<SpectreRpcType>& GetSkipRpcTypes();
 
 class WebsocketRequestTest : public RequestTest {
 };

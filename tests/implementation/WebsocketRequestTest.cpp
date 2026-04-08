@@ -17,21 +17,24 @@ void RunWebsocketTest(const fs::path& testJsonPath, json& outResponse) {
     RunWebsocketTest(testJson, outResponse);
 }
 
-std::vector<SpectreRpcType> skipRpcTypes = []() {
-    std::vector<SpectreRpcType> rpcTypes;
-    std::ifstream testSkipFile(ResourcesUtilities::GetResourcesFolder() / "testrequests" / "wsSkipTests.txt");
-    std::string line;
-    while (std::getline(testSkipFile, line)) {
-        rpcTypes.emplace_back(line);
-    }
-    return rpcTypes;
-}();
+std::vector<SpectreRpcType>& GetSkipRpcTypes() {
+    static std::vector<SpectreRpcType> skipRpcTypes = []() {
+        std::vector<SpectreRpcType> rpcTypes;
+        std::ifstream testSkipFile(ResourcesUtilities::GetResourcesFolder() / "testrequests" / "wsSkipTests.txt");
+        std::string line;
+        while (std::getline(testSkipFile, line)) {
+            rpcTypes.emplace_back(line);
+        }
+        return rpcTypes;
+    }();
+    return skipRpcTypes;
+}
 
 void RunWebsocketTest(json testJson, json& outResponse) // NOLINT
 {
     TestWebsocketClient wsClient(8082);
     SpectreRpcType reqType = SpectreRpcType(testJson.at("rpcType").get<std::string>());
-    if (std::ranges::find(skipRpcTypes, reqType) != skipRpcTypes.end()) {
+    if (std::ranges::find(GetSkipRpcTypes(), reqType) != GetSkipRpcTypes().end()) {
         GTEST_SKIP() << "Skipping since in the ignore list";
     }
     std::cout << "Test info: " << '\n';

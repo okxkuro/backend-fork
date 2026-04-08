@@ -15,18 +15,21 @@ void RunHTTPTest(const fs::path& testPath, json& outResponse) {
     return RunHTTPTest(testJson, outResponse);
 }
 
-std::vector<std::string> skipRoutes = []() {
-    std::vector<std::string> skipRoutes;
-    std::ifstream skipRoutesFile(ResourcesUtilities::GetResourcesFolder() / "testrequests" / "httpSkipTests.txt");
-    std::string line;
-    while (std::getline(skipRoutesFile, line)) {
-        skipRoutes.push_back(line);
-    }
+const std::vector<std::string>& GetSkipRoutes() {
+    static std::vector<std::string> skipRoutes = []() {
+        std::vector<std::string> skipRoutes;
+        std::ifstream skipRoutesFile(ResourcesUtilities::GetResourcesFolder() / "testrequests" / "httpSkipTests.txt");
+        std::string line;
+        while (std::getline(skipRoutesFile, line)) {
+            skipRoutes.push_back(line);
+        }
+        return skipRoutes;
+    }();
     return skipRoutes;
-}();
+}
 
 void RunHTTPTest(json testJson, json& outResponse) {
-    if (std::ranges::find(skipRoutes, testJson.at("path").get<std::string>()) != skipRoutes.end()) {
+    if (std::ranges::find(GetSkipRoutes(), testJson.at("path").get<std::string>()) != GetSkipRoutes()S.end()) {
         GTEST_SKIP() << "Route " << testJson.at("path") << "is in list of skip routes";
     }
     std::cout << "Test info: " << '\n';
