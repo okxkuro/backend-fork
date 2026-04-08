@@ -184,7 +184,7 @@ pipeline {
                             stage("Create diff") {
                                 sh """
                                     if ! git diff --quiet; then
-                                        git diff > clang-format.patch
+                                        git diff > clang-tidy.patch
                                         echo \"Patch created, apply the patch from the artifacts section to fix\"
                                     else
                                         echo \"No changes required\"
@@ -192,12 +192,12 @@ pipeline {
                                 """
                             }
                             stage("Upload diff if exists") {
-                                if (fileExists('clang-format.patch')) {
-                                    archiveArtifacts artifacts: 'clang-format.patch', fingerprint: true
+                                if (fileExists('clang-tidy.patch')) {
+                                    archiveArtifacts artifacts: 'clang-tidy.patch', fingerprint: true
                                 }
                             }
                             stage("Fail if diff exists") {
-                                if (fileExists('clang-format.patch')) {
+                                if (fileExists('clang-tidy.patch')) {
                                     sh "exit 1"
                                 }
                             }
