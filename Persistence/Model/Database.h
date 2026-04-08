@@ -106,7 +106,7 @@ class Database {
         }
         if (query.getColumnCount() != 1) {
             spdlog::warn("Multiple columns returned by query passed into GetField w FieldKey {}, ignoring all columns except first one",
-                fieldData.at(key).GetFieldName());
+                         fieldData.at(key).GetFieldName());
         }
         const char* blob = static_cast<const char*>(query.getColumn(0).getBlob());
         int sz = query.getColumn(0).getBytes();

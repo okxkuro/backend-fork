@@ -162,13 +162,12 @@ int main(int argc, char** argv) {
         new SetPlayerPresenceHandler(
             SpectreRpcType("FriendRpc.SetPresenceV1Request"));
         new GetFriendsListAndRegisterOnlineHandler(
-            SpectreRpcType("FriendRpc.GetFriendListAndRegisterOnlineV1Request")
-            );
+            SpectreRpcType("FriendRpc.GetFriendListAndRegisterOnlineV1Request"));
     } catch (std::exception& e) {
         spdlog::error("Failed to initialize handlers, exiting...", e.what());
     }
     std::ofstream serverLockFile("./server.lock", std::ios::trunc | std::ios::out);
-    try{
+    try {
         RequestRouter::Start();
         logger->info("acceptor threads started");
         while (!bStop) {

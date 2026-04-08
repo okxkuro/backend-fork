@@ -5,8 +5,8 @@
 #include <GetFriendsListAndRegisterOnlineHandler.h>
 #include <PlayerPresence.pb.h>
 
-GetFriendsListAndRegisterOnlineHandler::GetFriendsListAndRegisterOnlineHandler(SpectreRpcType rpcType) : WebsocketPacketProcessor(rpcType) {
-
+GetFriendsListAndRegisterOnlineHandler::GetFriendsListAndRegisterOnlineHandler(SpectreRpcType rpcType)
+    : WebsocketPacketProcessor(rpcType) {
 }
 
 std::optional<WebsocketPayload> GetFriendsListAndRegisterOnlineHandler::Process(SpectreWebsocketRequest& packet) {

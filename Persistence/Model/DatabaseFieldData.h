@@ -1,28 +1,29 @@
 #pragma once
-#include <google/protobuf/message.h>
-#include <string>
 #include <FieldKey.h>
 #include <SQLiteCpp/Statement.h>
 #include <filesystem>
 #include <fstream>
+#include <google/protobuf/message.h>
 #include <google/protobuf/util/json_util.h>
 #include <spdlog/spdlog.h>
+#include <string>
 
 class DatabaseFieldData {
-private:
+  private:
     FieldKey fieldKey;
     std::string fieldName;
     std::unique_ptr<google::protobuf::Message> defaultFieldValue;
     std::function<bool(google::protobuf::Message*)> updateHandler;
     static google::protobuf::util::JsonParseOptions parseOpts;
-public:
-    DatabaseFieldData(FieldKey fieldKey, std::string className,
-        std::unique_ptr<google::protobuf::Message> defaultFieldValue = nullptr,
-        std::function<bool(google::protobuf::Message*)> updateHandler = nullptr);
 
-    template<typename T>
+  public:
+    DatabaseFieldData(FieldKey fieldKey, std::string className,
+                      std::unique_ptr<google::protobuf::Message> defaultFieldValue = nullptr,
+                      std::function<bool(google::protobuf::Message*)> updateHandler = nullptr);
+
+    template <typename T>
     static DatabaseFieldData WithDefaultFromPath(FieldKey fieldKey, std::string className, const std::filesystem::path& defaultFieldValuePath,
-        std::function<bool(google::protobuf::Message*)> updateHandler = nullptr){
+                                                 std::function<bool(google::protobuf::Message*)> updateHandler = nullptr) {
         const std::ifstream defaultFile(defaultFieldValuePath);
         std::stringstream buf;
         buf << defaultFile.rdbuf();

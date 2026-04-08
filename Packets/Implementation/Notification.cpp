@@ -6,8 +6,7 @@
 #include <uuid.h>
 
 static google::protobuf::util::JsonPrintOptions opts = {
-    .always_print_fields_with_no_presence = true
-};
+    .always_print_fields_with_no_presence = true};
 
 static std::mt19937 rng = std::mt19937{std::random_device{}()};
 static uuids::uuid_random_generator gen{rng};
@@ -19,9 +18,8 @@ Notification::Notification(const SpectreRpcType& notificationType, const google:
     }
 }
 
-Notification::Notification(const SpectreRpcType& notificationType, std::string  notificationId, std::string  notificationPayload)
+Notification::Notification(const SpectreRpcType& notificationType, std::string notificationId, std::string notificationPayload)
     : notificationType(notificationType), notificationId(std::move(notificationId)), notificationData(std::move(notificationPayload)) {
-
 }
 
 const SpectreRpcType& Notification::GetNotificationType() const {

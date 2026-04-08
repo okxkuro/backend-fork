@@ -7,12 +7,12 @@ const std::string& WebsocketPayload::GetPayload() const {
     return payload;
 }
 
-WebsocketPayload::WebsocketPayload(std::string  payload) : payload(std::move(payload)) {
-
+WebsocketPayload::WebsocketPayload(std::string payload)
+    : payload(std::move(payload)) {
 }
 
-WebsocketPayload::WebsocketPayload(const nlohmann::json& json) : payload(json.dump()) {
-
+WebsocketPayload::WebsocketPayload(const nlohmann::json& json)
+    : payload(json.dump()) {
 }
 
 WebsocketPayload::WebsocketPayload(const google::protobuf::Message& message) {

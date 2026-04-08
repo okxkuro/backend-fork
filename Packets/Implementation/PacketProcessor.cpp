@@ -2,13 +2,13 @@
 #include <RequestRouter.h>
 #include <utility>
 
-HTTPPacketProcessor::HTTPPacketProcessor(HTTPRequestIdentifier routeId) :
-    routeId(std::move(std::move(routeId))) {
+HTTPPacketProcessor::HTTPPacketProcessor(HTTPRequestIdentifier routeId)
+    : routeId(std::move(std::move(routeId))) {
     RequestRouter::RegisterHTTPProcessor(this);
 }
 
-HTTPPacketProcessor::HTTPPacketProcessor(HTTPRequestIdentifier routeId, uint16_t port) :
-routeId(std::move(std::move(routeId))) {
+HTTPPacketProcessor::HTTPPacketProcessor(HTTPRequestIdentifier routeId, uint16_t port)
+    : routeId(std::move(std::move(routeId))) {
     RequestRouter::RegisterHTTPProcessor(port, this);
 }
 

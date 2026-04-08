@@ -6,9 +6,9 @@
 #include <HTTPRequestIdentifier.h>
 #include <SpectreRpcType.h>
 #include <SpectreWebsocketRequest.h>
+#include <WebsocketPayload.h>
 #include <string>
 #include <utility>
-#include <WebsocketPayload.h>
 
 class HTTPPacketProcessor {
   private:

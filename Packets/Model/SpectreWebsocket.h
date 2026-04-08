@@ -1,10 +1,10 @@
 #pragma once
+#include <Notification.h>
 #include <SpectreRpcType.h>
+#include <functional>
 #include <google/protobuf/message.h>
 #include <nlohmann/json.hpp>
 #include <restinio/websocket/websocket.hpp>
-#include <Notification.h>
-#include <functional>
 
 using json = nlohmann::ordered_json;
 namespace pbuf = google::protobuf;
@@ -12,7 +12,8 @@ namespace rws = restinio::websocket::basic;
 
 class SpectreWebsocket {
     friend class RequestRouter;
-private:
+
+  private:
     static std::unordered_map<std::string, SpectreWebsocket*> connectionsByPlayerId;
     static std::mutex connectionsMapMutex;
 

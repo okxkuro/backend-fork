@@ -4,11 +4,11 @@
 #include <utility>
 
 HTTPRequestIdentifier::HTTPRequestIdentifier(std::string route, HTTPRequestType reqType)
-    : route(std::move(std::move(route))), reqType(reqType){
-
+    : route(std::move(std::move(route))), reqType(reqType) {
 }
 
-HTTPRequestIdentifier::HTTPRequestIdentifier(std::string route) : route(route), reqType(HTTPRequestType::GET) {
+HTTPRequestIdentifier::HTTPRequestIdentifier(std::string route)
+    : route(route), reqType(HTTPRequestType::GET) {
     spdlog::warn("No request type provided for route {}, assuming GET", route);
 }
 
@@ -23,4 +23,3 @@ const std::string& HTTPRequestIdentifier::GetRoute() const {
 bool HTTPRequestIdentifier::operator==(const HTTPRequestIdentifier& other) const {
     return route == other.route && reqType == other.reqType;
 }
-

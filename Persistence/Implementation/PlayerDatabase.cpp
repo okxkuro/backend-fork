@@ -2,16 +2,16 @@
 
 #include "PersistenceUtilities.h"
 
+#include <FriendsList.pb.h>
 #include <Inventory.pb.h>
 #include <LegacyPlayerData.pb.h>
 #include <OutfitLoadout.pb.h>
 #include <PlayerData.pb.h>
+#include <PlayerPresence.pb.h>
 #include <ProfileData.pb.h>
 #include <ResourcesUtilities.h>
-#include <WeaponLoadout.pb.h>
-#include <FriendsList.pb.h>
-#include <PlayerPresence.pb.h>
 #include <SavedNotificationData.pb.h>
+#include <WeaponLoadout.pb.h>
 
 PlayerDatabase::PlayerDatabase(const fs::path& path)
     : Database(path, "players", "PlayerID", "TEXT") {

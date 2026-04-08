@@ -97,8 +97,7 @@ void SpectreWebsocket::NotificationThread(const std::stop_token& st) {
 }
 
 void SpectreWebsocket::OnReceiveWebsocketMessage(const rws::ws_handle_t& websocketHandler, const rws::message_handle_t& message) {
-    if (message->opcode() == rws::opcode_t::ping_frame || message->opcode() == rws::opcode_t::pong_frame
-        || message->opcode() == rws::opcode_t::connection_close_frame) {
+    if (message->opcode() == rws::opcode_t::ping_frame || message->opcode() == rws::opcode_t::pong_frame || message->opcode() == rws::opcode_t::connection_close_frame) {
         return;
     }
     SpectreWebsocketRequest request(message->payload(), playerId);

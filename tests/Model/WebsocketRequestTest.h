@@ -1,7 +1,7 @@
 #pragma once
 #include <RequestTest.h>
-#include <nlohmann/json.hpp>
 #include <SpectreRpcType.h>
+#include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
 using json = nlohmann::ordered_json;

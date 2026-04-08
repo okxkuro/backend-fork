@@ -19,7 +19,7 @@ static std::string GetSteamApiKey() {
     return authJson.at("steamApiKey").get<std::string>();
 }
 
-std::optional<restinio::response_builder_t<restinio::restinio_controlled_output_t>> SubmitProviderIdHandler::Process(restinio::request_handle_t req, restinio::router::route_params_t  /*params*/) {
+std::optional<restinio::response_builder_t<restinio::restinio_controlled_output_t>> SubmitProviderIdHandler::Process(restinio::request_handle_t req, restinio::router::route_params_t /*params*/) {
     if (GetSteamApiKey().empty()) {
         return req->create_response(restinio::status_bad_request()).set_body("no steam api key provided");
     }

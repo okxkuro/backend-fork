@@ -5,7 +5,8 @@
 #include <SetPlayerPresenceHandler.h>
 #include <SetPresenceRequest.pb.h>
 
-SetPlayerPresenceHandler::SetPlayerPresenceHandler(SpectreRpcType rpcType) : WebsocketPacketProcessor(rpcType) {
+SetPlayerPresenceHandler::SetPlayerPresenceHandler(SpectreRpcType rpcType)
+    : WebsocketPacketProcessor(rpcType) {
 }
 
 std::optional<WebsocketPayload> SetPlayerPresenceHandler::Process(SpectreWebsocketRequest& packet) {

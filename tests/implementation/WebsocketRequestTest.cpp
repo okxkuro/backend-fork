@@ -4,8 +4,8 @@
 #include <JsonTestUtil.h>
 #include <TestWebsocketClient.h>
 #include <WebsocketRequestTest.h>
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 #include <vector>
 
 void RunWebsocketTest(const fs::path& testJsonPath, json& outResponse) {
