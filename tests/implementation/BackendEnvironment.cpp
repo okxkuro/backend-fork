@@ -17,6 +17,8 @@ void BackendEnvironment::SetUp() {
                                     "pragmabackend";
     std::system("pkill -9 pragmabackend"); // NOLINT
 #endif
+    // Wait for file handle release in case that there was a backend instance already running
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
     std::filesystem::remove(PersistenceUtilities::GetSavePath() / "playerdata.sqlite");
     server = std::make_unique<TinyProcessLib::Process>(
         std::string(std::filesystem::absolute(exePath).string() + " 8081 8082 8083"),

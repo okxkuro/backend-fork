@@ -6,17 +6,8 @@
 std::unordered_map<FieldKey, DatabaseFieldData> Database::fieldData{};
 
 Database::Database(const fs::path& dbPath, std::string tableName, std::string keyFieldName, const std::string& /*keyFieldType*/)
-    : filename(dbPath), dbRaw(dbPath.string(), sql::OPEN_READWRITE | sql::OPEN_CREATE),
-      tableName(std::move(tableName)), keyFieldName(std::move(keyFieldName)) {
-    dbRaw.exec("CREATE TABLE IF NOT EXISTS " + GetTableName() + " (" + GetKeyFieldName() + " " + GetKeyFieldType() + " PRIMARY KEY);");
-}
-
-sql::Database* Database::GetRaw() {
-    return &dbRaw;
-}
-
-sql::Database& Database::GetRawRef() {
-    return dbRaw;
+    : BasicDatabase(dbPath, tableName), keyFieldName(std::move(keyFieldName)) {
+    GetRaw()->exec("CREATE TABLE IF NOT EXISTS " + GetTableName() + " (" + GetKeyFieldName() + " " + GetKeyFieldType() + " PRIMARY KEY);");
 }
 
 sql::Statement Database::FormatStatement(std::string command, FieldKey key) {
@@ -30,7 +21,7 @@ sql::Statement Database::FormatStatement(std::string command, FieldKey key) {
         command.replace(colPos, sizeof("{col}") - 1, GetFieldName(key));
         colPos = command.find("{col}");
     }
-    return sql::Statement(dbRaw, command);
+    return sql::Statement(*GetRaw(), command);
 }
 
 /** Makes the following assumptions:
@@ -73,10 +64,6 @@ bool Database::IsFieldPopulated(FieldKey key, const std::string& dbKey) {
 
 const std::string& Database::GetFieldName(FieldKey key) {
     return fieldData.at(key).GetFieldName();
-}
-
-const std::string& Database::GetTableName() {
-    return tableName;
 }
 
 const std::string& Database::GetKeyFieldName() {

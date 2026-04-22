@@ -12,5 +12,7 @@ enum PlayerBasicPresence {
 }
 
 message PlayerPresenceExt {
-
+    string lastUpdated = 1;
+    int32 mainPresenceId = 2;
+    string presenceContext = 3;
 }

@@ -3,16 +3,11 @@
 
 #include <TestHTTPClient.h>
 #include <TestWebsocketClient.h>
+#include <future>
 #include <google/protobuf/util/json_util.h>
 
 TestWebsocketClient::TestWebsocketClient(unsigned short port)
-    :
-
-      workGuard(boost::asio::make_work_guard(ioCtx)),
-      nextRequestId(0) {
-    ioThread = std::thread([this] {
-        ioCtx.run();
-    });
+    : ioCtx(), nextRequestId(0) {
     boost::asio::ip::tcp::resolver resolver(ioCtx);
     ws = std::make_shared<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(ioCtx);
     HTTPFetch(8081, "/v1/submitproviderid", R"({"providerId": "76561199041068696"})", boost::beast::http::verb::post);
@@ -39,37 +34,50 @@ std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> T
     return ws;
 }
 
-boost::beast::flat_buffer TestWebsocketClient::SendPacket(const nlohmann::json& packet, SpectreRpcType rpcType) const {
-    std::string final = "{\"requestId\":" + std::to_string(nextRequestId) + R"(,"type":")" + rpcType.GetName() + R"(","payload":)" + packet.dump() + "}";
-    ws->write(boost::asio::buffer(final));
-    boost::beast::flat_buffer buffer;
-    boost::asio::steady_timer timer(ws->get_executor());
+boost::beast::flat_buffer TestWebsocketClient::SendPacket(const nlohmann::json& packet, SpectreRpcType rpcType) {
+    auto promise = std::make_shared<std::promise<boost::beast::flat_buffer>>();
+    auto future = promise->get_future();
+    auto buffer = std::make_shared<boost::beast::flat_buffer>();
 
-    // Timeout waiting for response after 3 seconds
-    timer.expires_after(std::chrono::seconds(3));
-    timer.async_wait([&](auto ec) {
-        if (!ec) {
-            boost::system::error_code ignore;
-            ws->next_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignore); // NOLINT
-            ws->next_layer().close(ignore);                                                 // NOLINT
-        }
+    // Move the work into the ioCtx thread to avoid data races
+    boost::asio::post(ioCtx, [this, packet, rpcType, promise, buffer]() {
+        std::string final = "{\"requestId\":" + std::to_string(nextRequestId) +
+                            R"(,"type":")" + rpcType.GetName() +
+                            R"(","payload":)" + packet.dump() + "}";
+
+        // Write the request
+        ws->async_write(boost::asio::buffer(final), [this, promise, buffer](boost::system::error_code ec, std::size_t) {
+            if (ec) {
+                promise->set_value({});
+                return;
+            }
+
+            // Start the timer after the write completes
+            auto timer = std::make_shared<boost::asio::steady_timer>(ioCtx, std::chrono::seconds(3));
+
+            // Read the response asynchronously
+            ws->async_read(*buffer, [promise, buffer, timer](boost::system::error_code ec, std::size_t) {
+                timer->cancel(); // Stop the timer if we got a response
+                if (ec) {
+                    promise->set_value({}); // Signal failure/timeout to the test
+                } else {
+                    promise->set_value(std::move(*buffer));
+                }
+            });
+
+            // Timer handler
+            timer->async_wait([this, timer](boost::system::error_code ec) {
+                if (!ec) { // If timer actually expired (not cancelled)
+                    boost::system::error_code ignore;
+                    ws->next_layer().close(ignore); // Force close to break the async_read
+                }
+            });
+        });
     });
 
-    boost::system::error_code ec;
-    ws->read(buffer, ec);
-
-    timer.cancel();
-
-    if (ec == boost::asio::error::operation_aborted) {
+    // Block the TEST thread until the PROMISE is fulfilled or 5s total pass
+    if (future.wait_for(std::chrono::seconds(5)) == std::future_status::timeout) {
         return {};
     }
-    return buffer;
-}
-
-TestWebsocketClient::~TestWebsocketClient() {
-    workGuard.reset(); // allow io_context to stop
-    ioCtx.stop();      // stop any pending operations
-    if (ioThread.joinable()) {
-        ioThread.join(); // wait for background thread
-    }
+    return future.get();
 }

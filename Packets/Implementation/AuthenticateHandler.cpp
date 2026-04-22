@@ -1,3 +1,5 @@
+#include "BanDatabase.h"
+#include "ProviderLinkDatabase.h"
 #include "ResourcesUtilities.h"
 
 #include <AuthLatch.h>
@@ -73,8 +75,7 @@ std::optional<drogon::HttpResponsePtr> AuthenticateHandler::Process(const drogon
         return res;
     }
 
-    auto& db = PlayerDatabase::Get();
-    auto playerId = db.LookupPlayerByProvider("STEAM", steam64);
+    auto playerId = ProviderLinkDatabase::Get().LookupPlayerByProvider(AuthProvider::STEAM, steam64);
 
     if (playerId.empty()) {
         std::string persona = "Player";
@@ -83,16 +84,16 @@ std::optional<drogon::HttpResponsePtr> AuthenticateHandler::Process(const drogon
             if (auto info = v.ValidateSteamId(steam64)) persona = info->personaName;
         }
         playerId = CreatePlayerFromSteam(steam64, persona);
-        db.UpsertProviderMap("STEAM", steam64, playerId);
+        ProviderLinkDatabase::Get().UpsertProviderMap(AuthProvider::STEAM, steam64, playerId);
     }
 
-    if (db.IsBanned(playerId)) {
+    if (BanDatabase::Get().IsBanned(playerId)) {
         auto res = HttpResponse::newHttpResponse();
         res->setBody(R"({"error":"ACCOUNT BANNED. CONTACT ASTROVAL0 ON DISCORD"})");
         return res;
     }
 
-    auto prof = db.GetField<ProfileData>(FieldKey::PROFILE_DATA, playerId);
+    auto prof = PlayerDatabase::Get().GetField<ProfileData>(FieldKey::PROFILE_DATA, playerId);
     const std::string display = prof ? prof->displayname().displayname() : "Player";
     const std::string disc = prof ? prof->displayname().discriminator() : "0000";
     const std::string socialId = playerId;

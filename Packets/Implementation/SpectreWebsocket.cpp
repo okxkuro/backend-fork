@@ -51,32 +51,34 @@ static std::string DecodePlayerIdNoverify(const std::string& token) {
 
 void SpectreWebsocket::NotificationThread(const std::stop_token& st) {
     while (!st.stop_requested()) {
-        if (!notificationQueueLock.try_lock()) {
-            continue;
-        }
-        if (!con || !con->connected()) {
-            continue;
-        }
-        if (notificationsToDeliver.empty()) {
-            notificationQueueLock.unlock();
-            continue;
-        }
-        Notification& notification = notificationsToDeliver.front();
-        con->send(FormulateFinalNotification(notification));
+        std::unique_lock lock(notificationQueueLock);
+        notificationQueueCondition.wait(lock, [&] {
+            return st.stop_requested() || (!notificationsToDeliver.empty() && !con.expired() && con.lock()->connected());
+        });
+        std::shared_ptr<WebSocketConnection> connection = con.lock();
+        if (st.stop_requested()) break;
+
+        Notification notification = notificationsToDeliver.front();
         notificationsToDeliver.pop_front();
+
+        connection->send(FormulateFinalNotification(notification));
+
         SavedNotificationData savedData;
         for (const Notification& notif : notificationsToDeliver) {
-            SavedNotification* newNotif = savedData.add_notificationstodeliver();
+            auto* newNotif = savedData.add_notificationstodeliver();
             newNotif->set_notificationdata(notif.GetNotificationData());
             newNotif->set_notificationid(notif.GetNotificationId());
             newNotif->set_rpctype(notif.GetNotificationType().GetName());
         }
+
         PlayerDatabase::Get().SetField(FieldKey::NOTIFICATION_DATA, &savedData, playerId);
-        notificationQueueLock.unlock();
     }
 }
 
 void SpectreWebsocketController::handleNewMessage(const drogon::WebSocketConnectionPtr& wsCon, std::string&& message, const drogon::WebSocketMessageType& messageType) {
+    if (messageType != WebSocketMessageType::Binary && messageType != WebSocketMessageType::Text) {
+        return;
+    }
     std::shared_ptr<SpectreWebsocket> ctx = wsCon->getContext<SpectreWebsocket>();
     std::string playerId = ctx->GetPlayerId();
     SpectreWebsocketRequest request(message, playerId);
@@ -91,6 +93,9 @@ void SpectreWebsocketController::handleNewMessage(const drogon::WebSocketConnect
     }
     std::string finalResponse = ctx->FormulateFinalResponse(response.value().GetPayload(), request.GetRequestId(), request.GetResponseType());
     wsCon->send(finalResponse);
+    for (const Notification& notification : response.value().GetPostSendNotifications()) {
+        ScheduleNotificationForPlayer(ctx->GetPlayerId(), notification);
+    }
 }
 
 std::string SpectreWebsocket::FormulateFinalResponse(const std::shared_ptr<json>& res) {
@@ -141,8 +146,11 @@ std::optional<WebSocketConnectionPtr> SpectreWebsocketController::GetConnectionF
 }
 
 void SpectreWebsocket::ScheduleNotification(const Notification& notif) {
-    std::unique_lock lock(notificationQueueLock);
-    notificationsToDeliver.push_back(notif);
+    {
+        std::lock_guard lock(notificationQueueLock);
+        notificationsToDeliver.push_back(notif);
+    }
+    notificationQueueCondition.notify_one();
 }
 
 void SpectreWebsocketController::ScheduleNotificationForPlayer(const std::string& playerId, const Notification& notif) {
@@ -161,7 +169,7 @@ void SpectreWebsocketController::ScheduleNotificationForPlayer(const std::string
 }
 
 SpectreWebsocket::SpectreWebsocket(const drogon::HttpRequestPtr& req, const drogon::WebSocketConnectionPtr& connection) {
-
+    con = connection;
     curSequenceNumber = 0;
     const auto bearer = ExtractBearer(req->getHeader("Authorization"));
     const auto pid = bearer.empty() ? std::string() : DecodePlayerIdNoverify(bearer);

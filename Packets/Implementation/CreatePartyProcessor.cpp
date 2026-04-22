@@ -1,3 +1,5 @@
+#include "ProviderLinkDatabase.h"
+
 #include <CaseHelper.h>
 #include <CreatePartyProcessor.h>
 #include <CreatePartyRequest.pb.h>
@@ -106,7 +108,7 @@ std::optional<WebsocketPayload> CreatePartyProcessor::Process(SpectreWebsocketRe
     sharedData->set_platformname("STEAM");
     sharedData->set_crossplayplatformkind("CROSS_PLAY_PLATFORM_PC");
 
-    std::string steamId = PlayerDatabase::Get().GetProviderIdByPlayerId(packet.GetPlayerId(), "STEAM");
+    std::string steamId = ProviderLinkDatabase::Get().GetProviderIdByPlayerId(packet.GetPlayerId(), AuthProvider::STEAM);
     if (steamId.empty()) {
         spdlog::error("no steamId, investigate me!!!!!!!");
     }

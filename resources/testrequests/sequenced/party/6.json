@@ -1,15 +1,6 @@
 {
   "requestBody": {
-    "partyId": "${responses[1]party.partyId}",
-    "requestExt": {
-      "preferredRegions": [],
-      "preferredTeam": "SPECTATOR",
-      "refreshData": true,
-      "region": "",
-      "regionPings": {},
-      "sharedClientData": "",
-      "version": ""
-    }
+    "partyId": "${responses[1]party.partyId}"
   },
   "responsePayload": {
     "party": {
@@ -756,24 +747,6 @@
                   "viewed": false
                 },
                 "instanceId": "930216bb-2e63-488f-9faf-25b7eaa334ca"
-              },
-              {
-                "catalogId": "SpectreWeaponCharmItemDef:CharmID_Misc_Community_06",
-                "ext": {
-                  "instancedCustomizationData": {
-                    "instancedAlterationChannels": [
-                      {
-                        "channelId": "Mesh",
-                        "ownedAlterations": [
-                          "On"
-                        ]
-                      }
-                    ]
-                  },
-                  "reserved": 0.0,
-                  "viewed": false
-                },
-                "instanceId": "b291c752-10a2-47d6-84e2-d33736d0c550"
               }
             ],
             "playerData": {
@@ -949,8 +922,8 @@
                       "channelId": "Mesh"
                     }
                   ],
-                  "attachmentItemCatalogId": "SpectreWeaponCharmItemDef:CharmID_Misc_Community_06",
-                  "attachmentItemInstanceId": "B291C752-10A2-47D6-84E2-D33736D0C550",
+                  "attachmentItemCatalogId": "SpectreWeaponCharmItemDef:CharmID_Misc_Community_02",
+                  "attachmentItemInstanceId": "385AAAC6-C736-4A2D-9CE0-E16E0A1CC736",
                   "itemCatalogId": "SpectreWeaponCosmeticItemDef:WeaponID_AR_Heavy_Communa",
                   "itemInstanceId": "CECDDD31-4EBA-42BC-8910-E6971C010EAB",
                   "itemType": ""
@@ -1657,9 +1630,9 @@
         "uswest-1",
         "useast-1"
       ],
-      "version": "10"
+      "version": "5"
     }
   },
-  "rpcType": "PartyRpc.UpdatePartyPlayerV1Request",
-  "testAge": 1740506574.492
+  "rpcType": "PartyRpc.EnterMatchmakingV1Request",
+  "testAge": 1740506368.83
 }

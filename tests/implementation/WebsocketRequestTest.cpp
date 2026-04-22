@@ -44,9 +44,7 @@ void RunWebsocketTest(json testJson, json& outResponse) // NOLINT
     json& reqBody = testJson.at("requestBody");
     boost::beast::flat_buffer res = wsClient.SendPacket(reqBody, reqType);
     std::string resStr(boost::asio::buffers_begin(res.data()), boost::asio::buffers_end(res.data()));
-    if (resStr.empty()) {
-        GTEST_FAIL() << "Expected a response to be given";
-    }
+    ASSERT_FALSE(resStr.empty()) << "Expected a response to be given";
     ASSERT_NO_THROW(outResponse = json::parse(resStr));
     ASSERT_TRUE(outResponse.contains("sequenceNumber"));
     ASSERT_TRUE(outResponse.at("sequenceNumber") == 0);

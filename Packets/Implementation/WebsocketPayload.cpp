@@ -8,18 +8,56 @@ const std::string& WebsocketPayload::GetPayload() const {
 }
 
 WebsocketPayload::WebsocketPayload(std::string payload)
-    : payload(std::move(payload)) {
+    : WebsocketPayload(std::move(payload), {}) {
 }
 
 WebsocketPayload::WebsocketPayload(const nlohmann::json& json)
-    : payload(json.dump()) {
+    : WebsocketPayload(json, {}) {
 }
 
-WebsocketPayload::WebsocketPayload(const google::protobuf::Message& message) {
+WebsocketPayload::WebsocketPayload(std::string payload, std::initializer_list<Notification> postSendNotifications)
+    : payload(std::move(payload)), postSendNotifications(postSendNotifications) {
+
+}
+
+WebsocketPayload::WebsocketPayload(const nlohmann::json& json, std::initializer_list<Notification> postSendNotifications)
+    : payload(json.dump()), postSendNotifications(postSendNotifications) {
+
+}
+
+WebsocketPayload::WebsocketPayload(const google::protobuf::Message& message, std::initializer_list<Notification> postSendNotifications)
+    : postSendNotifications(postSendNotifications) {
     static google::protobuf::util::JsonPrintOptions opts{};
     opts.always_print_fields_with_no_presence = true;
     if (!google::protobuf::util::MessageToJsonString(message, &payload, opts).ok()) {
         spdlog::error("Failed to convert protobuf message to websocket payload");
         payload = "";
     }
+}
+
+WebsocketPayload::WebsocketPayload(std::string message, std::vector<Notification> postSendNotifications) :
+payload(message), postSendNotifications(postSendNotifications) {
+
+}
+
+WebsocketPayload::WebsocketPayload(const google::protobuf::Message& message, std::vector<Notification> postSendNotifications)
+    : postSendNotifications(postSendNotifications) {
+    static google::protobuf::util::JsonPrintOptions opts{};
+    opts.always_print_fields_with_no_presence = true;
+    if (!google::protobuf::util::MessageToJsonString(message, &payload, opts).ok()) {
+        spdlog::error("Failed to convert protobuf message to websocket payload");
+        payload = "";
+    }
+}
+
+WebsocketPayload::WebsocketPayload(const nlohmann::json& json, std::vector<Notification> postSendNotifications)
+    : payload(json.dump()), postSendNotifications(postSendNotifications) {
+
+}
+
+WebsocketPayload::WebsocketPayload(const google::protobuf::Message& message)
+    : WebsocketPayload(message, {}){}
+
+const std::vector<Notification>& WebsocketPayload::GetPostSendNotifications() const {
+    return postSendNotifications;
 }

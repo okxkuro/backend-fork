@@ -1,4 +1,5 @@
 #pragma once
+#include "BasicDatabase.h"
 #include "CaseHelper.h"
 #include "DatabaseFieldData.h"
 #include "FieldKey.h"
@@ -34,11 +35,8 @@ namespace sql = SQLite;
     std::unique_ptr<PlayerName> nameFetched = playerData.GetField<PlayerName>(fetchStatement, FieldKey::PLAYER_INGAME_NAME);
     spdlog::info("name: {}", nameFetched->name());
 */
-class Database {
+class Database : public BasicDatabase {
   private:
-    fs::path filename;
-    sql::Database dbRaw;
-    std::string tableName;
     std::string keyFieldName;
     std::string keyFieldType;
     pbuf::util::JsonParseOptions parseOpts;
@@ -64,9 +62,6 @@ class Database {
 
   public:
     Database(const fs::path& dbPath, std::string tableName, std::string keyFieldName, const std::string& keyFieldType);
-
-    sql::Database* GetRaw();
-    sql::Database& GetRawRef();
 
     template <typename T>
     std::vector<std::unique_ptr<T>> GetFields(sql::Statement& query, FieldKey key) {
@@ -143,7 +138,7 @@ class Database {
     sql::Statement FormatStatement(std::string command, FieldKey key);
 
     void AddPrototype(FieldKey key, DatabaseFieldData dat) {
-        sql::Statement colQuery(dbRaw, "PRAGMA table_info(" + GetTableName() + ");");
+        sql::Statement colQuery(*GetRaw(), "PRAGMA table_info(" + GetTableName() + ");");
         bool colExists = false;
         while (colQuery.executeStep()) {
             std::string colName = colQuery.getColumn(1).getText();
@@ -154,7 +149,7 @@ class Database {
         }
         if (!colExists) {
             try {
-                dbRaw.exec("ALTER TABLE " + GetTableName() + " ADD COLUMN " + dat.GetFieldName() + " BLOB;");
+                GetRaw()->exec("ALTER TABLE " + GetTableName() + " ADD COLUMN " + dat.GetFieldName() + " BLOB;");
             } catch (std::exception& e) {
                 spdlog::error("{}", e.what());
             }
@@ -169,7 +164,6 @@ class Database {
 
     static const std::string& GetFieldName(FieldKey key);
 
-    const std::string& GetTableName();
     const std::string& GetKeyFieldName();
     const std::string& GetKeyFieldType();
 };

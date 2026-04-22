@@ -6,6 +6,7 @@
 #include "StaticHTTPPackets.cpp" // NOLINT
 #include "StaticWSPackets.cpp"   // NOLINT
 #include "SubmitProviderIdHandler.h"
+#include "UpdatePresenceForPlayerHandler.h"
 
 #include <AuthenticateHandler.h>
 #include <CreatePartyProcessor.h>
@@ -48,6 +49,7 @@
 #include <csignal>
 #include <cstddef>
 #include <ctime>
+#include <drogon/drogon.h>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -58,7 +60,6 @@
 #include <spdlog/spdlog.h>
 #include <string>
 #include <thread>
-#include <drogon/drogon.h>
 
 static uint16_t gamePort = 8081;
 static uint16_t socialPort = 8082;
@@ -157,6 +158,7 @@ int main(int argc, char** argv) {
             SpectreRpcType("FriendRpc.SetPresenceV1Request"));
         new GetFriendsListAndRegisterOnlineHandler(
             SpectreRpcType("FriendRpc.GetFriendListAndRegisterOnlineV1Request"));
+        new UpdatePresenceForPlayerHandler(SpectreRpcType("MtnPlayerPresenceServiceRpc.UpdatePresenceForPlayerV1Request"));
     } catch (std::exception& e) {
         spdlog::error("Failed to initialize handlers, exiting...", e.what());
     }

@@ -16,8 +16,9 @@ class SpectreWebsocket {
     std::string playerId;
     std::deque<Notification> notificationsToDeliver;
     std::mutex notificationQueueLock;
+    std::condition_variable notificationQueueCondition;
     std::jthread notificationWorkerThread;
-    WebSocketConnectionPtr con;
+    std::weak_ptr<WebSocketConnection> con;
     void NotificationThread(const std::stop_token& st);
 public:
     explicit SpectreWebsocket(const drogon::HttpRequestPtr& req, const drogon::WebSocketConnectionPtr& con);
