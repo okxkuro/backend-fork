@@ -43,7 +43,7 @@ std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> T
     return ws;
 }
 
-boost::beast::flat_buffer TestWebsocketClient::SendPacket(const nlohmann::json& packet, SpectreRpcType rpcType) { //NOLINT
+boost::beast::flat_buffer TestWebsocketClient::SendPacket(const nlohmann::json& packet, SpectreRpcType rpcType) { // NOLINT
     auto promise = std::make_shared<std::promise<boost::beast::flat_buffer>>();
     auto future = promise->get_future();
     auto buffer = std::make_shared<boost::beast::flat_buffer>();
