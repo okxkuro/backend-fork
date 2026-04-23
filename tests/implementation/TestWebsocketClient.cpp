@@ -3,12 +3,16 @@
 
 #include <TestHTTPClient.h>
 #include <TestWebsocketClient.h>
-#include <future>
 #include <google/protobuf/util/json_util.h>
 
 TestWebsocketClient::TestWebsocketClient(unsigned short port)
-    : nextRequestId(0), workGuard(boost::asio::make_work_guard(ioCtx)) {
-    workerThread = std::thread([this]() { ioCtx.run(); });
+    :
+
+      workGuard(boost::asio::make_work_guard(ioCtx)),
+      nextRequestId(0) {
+    ioThread = std::thread([this] {
+        ioCtx.run();
+    });
     boost::asio::ip::tcp::resolver resolver(ioCtx);
     ws = std::make_shared<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>>(ioCtx);
     HTTPFetch(8081, "/v1/submitproviderid", R"({"providerId": "76561199041068696"})", boost::beast::http::verb::post);
@@ -31,72 +35,42 @@ TestWebsocketClient::TestWebsocketClient(unsigned short port)
     ws->handshake("127.0.0.1:" + std::to_string(port), "/");
 }
 
-TestWebsocketClient::~TestWebsocketClient() {
-    workGuard.reset(); // Allow ioCtx.run() to exit
-    ioCtx.stop();      // Force stop
-    if (workerThread.joinable()) {
-        workerThread.join();
-    }
-}
-
 std::shared_ptr<boost::beast::websocket::stream<boost::asio::ip::tcp::socket>> TestWebsocketClient::GetRawSocket() {
     return ws;
 }
 
-boost::beast::flat_buffer TestWebsocketClient::SendPacket(const nlohmann::json& packet, SpectreRpcType rpcType) { // NOLINT
-    auto promise = std::make_shared<std::promise<boost::beast::flat_buffer>>();
-    auto future = promise->get_future();
-    auto buffer = std::make_shared<boost::beast::flat_buffer>();
-    auto fulfilled = std::make_shared<std::atomic<bool>>(false);
+boost::beast::flat_buffer TestWebsocketClient::SendPacket(const nlohmann::json& packet, SpectreRpcType rpcType) const {
+    std::string final = "{\"requestId\":" + std::to_string(nextRequestId) + R"(,"type":")" + rpcType.GetName() + R"(","payload":)" + packet.dump() + "}";
+    ws->write(boost::asio::buffer(final));
+    boost::beast::flat_buffer buffer;
+    boost::asio::steady_timer timer(ws->get_executor());
 
-    // Increment request ID safely
-    int reqId = nextRequestId.fetch_add(1);
-
-    boost::asio::post(ioCtx, [this, packet, rpcType, promise, buffer, fulfilled, reqId]() {
-        // Construct JSON using the captured reqId
-        std::string final = "{\"requestId\":" + std::to_string(reqId) +
-                            R"(,"type":")" + rpcType.GetName() +
-                            R"(","payload":)" + packet.dump() + "}";
-
-        // Write then Read logic remains the same...
-        ws->async_write(boost::asio::buffer(final),
-                        [this, promise, buffer, fulfilled](boost::system::error_code ec, std::size_t) {
-                            if (ec) {
-                                if (!fulfilled->exchange(true)) promise->set_value({});
-                                return;
-                            }
-
-                            auto timer = std::make_shared<boost::asio::steady_timer>(ws->get_executor(), std::chrono::seconds(3));
-
-                            // Start the read
-                            ws->async_read(*buffer, [promise, buffer, timer, fulfilled](boost::system::error_code ec, std::size_t) {
-                                timer->cancel(); // Triggers the timer's handler with boost::asio::error::operation_aborted
-                                if (!fulfilled->exchange(true)) {
-                                    if (ec) {
-                                        promise->set_value({});
-                                    } else {
-                                        promise->set_value(std::move(*buffer));
-                                    }
-                                }
-                            });
-
-                            // Timer handler
-                            timer->async_wait([this, fulfilled, promise](boost::system::error_code ec) {
-                                // ec == operation_aborted means the read finished first
-                                if (!ec) {
-                                    if (!fulfilled->exchange(true)) {
-                                        boost::system::error_code ignored;
-                                        // Forcing the socket closed is the only way to break an active async_read
-                                        ignored = ws->next_layer().close(ignored);
-                                        promise->set_value({});
-                                    }
-                                }
-                            });
-                        });
+    // Timeout waiting for response after 3 seconds
+    timer.expires_after(std::chrono::seconds(3));
+    timer.async_wait([&](auto ec) {
+        if (!ec) {
+            boost::system::error_code ignore;
+            ws->next_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignore); // NOLINT
+            ws->next_layer().close(ignore);                                                 // NOLINT
+        }
     });
 
-    if (future.wait_for(std::chrono::seconds(5)) == std::future_status::ready) {
-        return future.get();
+    boost::system::error_code ec;
+    ws->read(buffer, ec);
+
+    timer.cancel();
+
+    if (ec == boost::asio::error::operation_aborted) {
+        return {};
     }
-    return {};
+    return buffer;
 }
+
+TestWebsocketClient::~TestWebsocketClient() {
+    workGuard.reset(); // allow io_context to stop
+    ioCtx.stop();      // stop any pending operations
+    if (ioThread.joinable()) {
+        ioThread.join(); // wait for background thread
+    }
+}
+ 

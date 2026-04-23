@@ -3,6 +3,7 @@
 //
 
 #include "GetFriendsListAndRegisterOnlineHandler.h"
+#include "ResourcesUtilities.h"
 #include "SubmitProviderIdHandler.h"
 #include "UpdatePresenceForPlayerHandler.h"
 
@@ -98,9 +99,12 @@ static void ShutdownServer() {
 std::atomic_bool serverOnline = false;
 std::atomic_bool handlersInitialized = false;
 std::atomic_bool loggerSetup = false;
+std::ofstream lockFile;
 
 void InitializeHandlers() {
     (void)signal(2, HandleInterrupt);
+    (void)signal(9, HandleInterrupt);
+    (void)signal(15, HandleInterrupt);
     if (!loggerSetup) {
         loggerSetup = true;
         SetupLogger();
@@ -166,6 +170,8 @@ void InitializeHandlers() {
     drogon::app().registerBeginningAdvice([]() {
         logger->info("Server bound!");
         serverOnline = true;
+        lockFile = std::ofstream(ResourcesUtilities::GetCurrentExecutablePath().parent_path() / "server.lock");
+        lockFile << "locked";
     });
     drogon::app().setThreadNum(4);
 }
@@ -192,6 +198,8 @@ int MainThread(int argc, char** argv, std::stop_token st) {
         std::shared_ptr<SpectreWebsocketController> wsController = std::make_shared<SpectreWebsocketController>();
         logger->info("starting server...");
         drogon::app().run();
+        lockFile.close();
+        fs::remove(ResourcesUtilities::GetCurrentExecutablePath().parent_path() / "server.lock");
         serverOnline = false;
         logger->info("Starting shutdown...");
     } catch (const std::exception& e) {

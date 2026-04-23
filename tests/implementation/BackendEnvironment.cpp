@@ -1,25 +1,31 @@
-#include "AuthLatch.h"
-#include "BanDatabase.h"
-#include "PartyDatabase.h"
 #include "PersistenceUtilities.h"
-#include "PlayerDatabase.h"
-#include "ProviderLinkDatabase.h"
 
 #include <BackendEnvironment.h>
 #include <ResourcesUtilities.h>
-#include <ServerMainThread.h>
 #include <filesystem>
-#include <fstream>
 #include <thread>
+#include <windows.h>
 
 namespace fs = std::filesystem;
 
-void BackendEnvironment::CleanStoredInformation() {
-    PlayerDatabase::Get().GetRaw()->exec("DELETE FROM " + PlayerDatabase::Get().GetTableName());
-    PartyDatabase::Get().GetRaw()->exec("DELETE FROM " + PartyDatabase::Get().GetTableName());
-    BanDatabase::Get().GetRaw()->exec("DELETE FROM " + BanDatabase::Get().GetTableName());
-    ProviderLinkDatabase::Get().GetRaw()->exec("DELETE FROM " + ProviderLinkDatabase::Get().GetTableName());
-    AuthLatch::Get().Clear();
+static void RunBackendWindows() {
+    STARTUPINFOA si = {sizeof(si)};
+    PROCESS_INFORMATION pi = {};
+    std::filesystem::path exePath = ResourcesUtilities::GetCurrentExecutablePath().parent_path().parent_path() /
+                                    "pragmabackend.exe";
+    BOOL ok = CreateProcessA("C:\\Windows\\System32\\cmd.exe",
+        (LPSTR)(std::string("/c ") + exePath.string()).c_str(),
+        nullptr,
+        nullptr,
+        TRUE,
+        CREATE_NEW_PROCESS_GROUP,
+        nullptr,
+        nullptr,
+        &si,
+        &pi);
+    FreeConsole();
+    AttachConsole(pi.dwProcessId);
+    SetConsoleCtrlHandler(nullptr, TRUE);
 }
 
 void BackendEnvironment::SetUp() {
@@ -32,10 +38,18 @@ void BackendEnvironment::SetUp() {
                                     "pragmabackend";
     std::system("pkill -9 pragmabackend"); // NOLINT
 #endif
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    CleanStoredInformation();
+    std::filesystem::remove(PersistenceUtilities::GetSavePath() / "playerdata.sqlite");
+    RunBackendWindows();
+    while (true) {
+        if (fs::exists(ResourcesUtilities::GetCurrentExecutablePath().parent_path().parent_path() / "server.lock")) {
+            break;
+        }
+    }
 }
 
 void BackendEnvironment::TearDown() {
-    CleanStoredInformation();
+    GenerateConsoleCtrlEvent(NULL, FALSE);
+    std::this_thread::sleep_for(std::chrono::seconds(1)); // wait for windows to release file handle
+    std::filesystem::remove(PersistenceUtilities::GetSavePath() / "playerdata.sqlite");
+    std::filesystem::remove(ResourcesUtilities::GetCurrentExecutablePath().parent_path().parent_path() / "server.lock");
 }
