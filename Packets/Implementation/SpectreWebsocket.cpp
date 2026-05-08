@@ -203,18 +203,9 @@ void SpectreWebsocketController::ScheduleNotificationForPlayer(const std::string
     }
 }
 
-SpectreWebsocket::SpectreWebsocket(const drogon::HttpRequestPtr& req, const drogon::WebSocketConnectionPtr& connection)
-    : con(connection), curSequenceNumber(0) {
+SpectreWebsocket::SpectreWebsocket(const drogon::WebSocketConnectionPtr& connection, std::string pid)
+    : con(connection), curSequenceNumber(0), playerId(std::move(pid)) {
 
-    const auto bearer = ExtractBearer(req->getHeader("Authorization"));
-    const auto pid = bearer.empty() ? std::string() : DecodePlayerIdNoverify(bearer);
-
-    if (!pid.empty()) {
-        playerId = pid;
-    } else {
-        spdlog::error("no playerid ???? investigate me!, thinks will be SEVERELY wrong for connection with {}", req->peerAddr().toIpPort());
-        playerId = "1";
-    }
     std::unique_ptr<SavedNotificationData> notificationsFromDisk = PlayerDatabase::Get().GetField<SavedNotificationData>(FieldKey::NOTIFICATION_DATA, playerId);
     for (int i = 0; i < notificationsFromDisk->notificationstodeliver_size(); i++) {
         const SavedNotification& currentNotif = notificationsFromDisk->notificationstodeliver(i);
@@ -232,7 +223,16 @@ void SpectreWebsocketController::AddConnection(const std::string& playerId, WebS
 }
 
 void SpectreWebsocketController::handleNewConnection(const drogon::HttpRequestPtr& req, const drogon::WebSocketConnectionPtr& con) {
-    std::shared_ptr<SpectreWebsocket> wsCtx = std::make_shared<SpectreWebsocket>(req, con);
+    const auto bearer = ExtractBearer(req->getHeader("Authorization"));
+    const auto playerId = bearer.empty() ? std::string() : DecodePlayerIdNoverify(bearer);
+
+    if (playerId.empty()) {
+        spdlog::warn("rejecting websocket from {}: missing or invalid bearer token", req->peerAddr().toIpPort());
+        con->forceClose();
+        return;
+    }
+
+    auto wsCtx = std::make_shared<SpectreWebsocket>(con, playerId);
     con->setContext(wsCtx);
 }
 

@@ -27,7 +27,7 @@ class SpectreWebsocket {
     void NotificationThread(const std::stop_token& st);
 
   public:
-    explicit SpectreWebsocket(const drogon::HttpRequestPtr& req, const drogon::WebSocketConnectionPtr& con);
+    SpectreWebsocket(const drogon::WebSocketConnectionPtr& con, std::string playerId);
 
     std::string FormulateFinalResponse(const std::shared_ptr<json>& res);
 
