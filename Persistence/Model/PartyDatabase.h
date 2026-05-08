@@ -3,12 +3,13 @@
 
 #include <CreatePartyRequest.pb.h>
 #include <mutex>
+#include <optional>
 
 class PartyDatabase : public ProtobufDatabase {
   private:
     std::recursive_mutex dbMutex;
     void DeleteParty(const std::string& partyId);
-    bool TryGetParty(const std::string& partyId, Party& party);
+    std::optional<Party> TryGetParty(const std::string& partyId);
 
   public:
     static PartyDatabase& Get();

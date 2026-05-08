@@ -92,12 +92,13 @@ void PartyDatabase::RemovePlayerFromParties(const std::string& playerId) {
     }
 
     for (const std::string& partyId : partyIds) {
-        Party party;
-        if (!TryGetParty(partyId, party)) {
+        std::optional<Party> partyOpt = TryGetParty(partyId);
+        if (!partyOpt) {
             spdlog::warn("dropping stale party {} during disconnect cleanup", partyId);
             DeleteParty(partyId);
             continue;
         }
+        Party& party = *partyOpt;
 
         bool removedPlayer = false;
         for (int i = party.partymembers_size() - 1; i >= 0; i--) {
@@ -166,13 +167,14 @@ void PartyDatabase::SaveParty(const Party& party) {
     }
 }
 
-bool PartyDatabase::TryGetParty(const std::string& partyId, Party& party) {
+std::optional<Party> PartyDatabase::TryGetParty(const std::string& partyId) {
     std::unique_ptr<PartyMembers> members = GetField<PartyMembers>(FieldKey::PARTY_MEMBERS, partyId);
     if (!members) {
         spdlog::error("failed to find members list for party {}", partyId);
-        return false;
+        return std::nullopt;
     }
 
+    Party party;
     for (int i = 0; i < members->members_size(); i++) {
         party.add_partymembers()->CopyFrom(members->members(i));
     }
@@ -196,7 +198,7 @@ bool PartyDatabase::TryGetParty(const std::string& partyId, Party& party) {
     getPartyMeta.bind(1, partyId);
     if (!getPartyMeta.executeStep()) {
         spdlog::error("failed to find party metadata for party: {}", partyId);
-        return false;
+        return std::nullopt;
     }
     party.set_invitecode(getPartyMeta.getColumn("PartyCode").getString());
     party.add_preferredgameserverzones("uscentral-1");
@@ -206,16 +208,16 @@ bool PartyDatabase::TryGetParty(const std::string& partyId, Party& party) {
     } else {
         party.set_version("1");
     }
-    return true;
+    return party;
 }
 
 Party PartyDatabase::GetParty(const std::string& partyId) {
     std::lock_guard lock(dbMutex);
-    Party party;
-    if (!TryGetParty(partyId, party)) {
+    std::optional<Party> partyOpt = TryGetParty(partyId);
+    if (!partyOpt) {
         throw std::runtime_error("failed to load party " + partyId);
     }
-    return party;
+    return std::move(*partyOpt);
 }
 
 PartyResponse PartyDatabase::GetPartyRes(const std::string& partyId) {
