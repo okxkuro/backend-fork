@@ -120,4 +120,4 @@ PRs welcome. If you contribute:
 * Press WIN+R -> type in `%localappdata%` -> press enter -> delete the `Spectre` folder.
 
 ### Using a published release
-You may download a public build of the backend from the (latest release)[https://github.com/SpectreRevival/pragmabackend/releases/latest]. This will contain a build for windows, linux and a docker container image. For windows or linux, simply extract the .zip and run the executable named pragmabackend inside. For the docker container, run `docker image load -i pragmabackend-docker.tar` and then `docker run -d -p 80:80 -p 8081:8081 -p 8082:8082 pragmabackend:latest`
+You may download a public build of the backend from the [latest release](https://github.com/SpectreRevival/pragmabackend/releases/latest). This will contain a build for windows, linux and a docker container image. For windows or linux, simply extract the .zip and run the executable named pragmabackend inside. For the docker container, run `docker image load -i pragmabackend-docker.tar` and then `docker run -d -p 80:80 -p 8081:8081 -p 8082:8082 pragmabackend:latest`
