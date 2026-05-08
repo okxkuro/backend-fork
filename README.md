@@ -25,7 +25,7 @@ This is currently set up primarily for **Windows** (can build for linux, check p
 > Dependency management is via **vcpkg** (manifest mode). You need to build with the vcpkg toolchain file enabled.
 
 You can follow this tutorial if you want (make sure to read about the configuration first)
-
+NOTE: as of 7th May 2026 you no longer need a steam api key or an auth.json. you only need an auth.json if you wish to use vivox voice and chat backend.
 https://youtu.be/j1DOWg2PbLA
 
 ## Clone
@@ -34,9 +34,13 @@ git clone https://github.com/astroval0/pragmabackend
 cd pragmabackend
 git submodule update --init --recursive
 
-### Vivox-Voice branch
+### Vivox-Voice Configuration
 
-If you're on the `vivox reimplementation` branch and you actually want to use voice / text, extend `auth.json` with:
+If you'd like to set up Vivox-Voice chat server (Spectre's text and voice chat backend)
+
+You'll need to make an auth.json at the repo root and fill it out with the respective values.
+
+https://unity.com/products/vivox
 
 ```json
 {
