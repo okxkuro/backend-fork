@@ -44,6 +44,7 @@ static std::vector<fs::path> gSequencedDirs = [] {
     }
     return sequencedDirs;
 }();
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SequencedRequestTest);
 
 INSTANTIATE_TEST_SUITE_P(WebsocketRequestTests, WebsocketRequestTest, ::testing::ValuesIn(gWsPaths));
 INSTANTIATE_TEST_SUITE_P(HttpRequestTests, HTTPRequestTest, ::testing::ValuesIn(gHttpPaths));
