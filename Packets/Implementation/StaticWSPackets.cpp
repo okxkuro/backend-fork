@@ -6,10 +6,11 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <string>
+#include <StaticWSPackets.h>
 
 namespace fs = std::filesystem;
 
-static void RegisterStaticHandlerFromFile(std::string filename, SpectreRpcType rpcType) {
+void RegisterStaticHandlerFromFile(std::string filename, SpectreRpcType rpcType) {
     std::ifstream resfile(filename);
     if (!resfile.is_open()) {
         throw std::runtime_error("failed to open response file");
@@ -20,7 +21,7 @@ static void RegisterStaticHandlerFromFile(std::string filename, SpectreRpcType r
     new StaticResponseProcessorWS(rpcType, res);
 }
 
-static void RegisterRegexHandlerFromFiles(SpectreRpcType rpcType, std::initializer_list<std::pair<Regex, std::string>> map) {
+void RegisterRegexHandlerFromFiles(SpectreRpcType rpcType, std::initializer_list<std::pair<Regex, std::string>> map) {
     std::unordered_map<Regex, std::shared_ptr<nlohmann::json>> map2;
     for (const auto& [regex, filename] : map) {
         std::ifstream resfile(filename);
@@ -37,7 +38,7 @@ static void RegisterRegexHandlerFromFiles(SpectreRpcType rpcType, std::initializ
 
 #pragma warning(push)
 #pragma warning(disable : 4101)
-static void RegisterStaticWSHandlers() {
+void RegisterStaticWSHandlers() {
     for (const auto& file : fs::recursive_directory_iterator(ResourcesUtilities::GetResourcesFolder() / "payloads" / "static" / "ws" / "game")) {
         if (!fs::is_regular_file(file)) continue;
         std::string rpcType = file.path().filename().stem().string();

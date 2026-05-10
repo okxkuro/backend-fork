@@ -62,6 +62,9 @@
 #include <spdlog/spdlog.h>
 #include <string>
 #include <thread>
+#include <ServerMainThread.h>
+#include <StaticHTTPPackets.h>
+#include <StaticWSPackets.h>
 
 static uint16_t gamePort = 8081;
 static uint16_t socialPort = 8082;
@@ -179,7 +182,7 @@ static void InitializeHandlers() {
     drogon::app().setThreadNum(4);
 }
 
-static int MainThread(int argc, char** argv, const std::stop_token& st) {
+int MainThread(int argc, char** argv, const std::stop_token& st) {
     if (argc == 4) {
         gamePort = std::stoi(std::string(argv[1]));
         socialPort = std::stoi(std::string(argv[2]));
