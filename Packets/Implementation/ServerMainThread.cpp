@@ -63,8 +63,6 @@
 #include <string>
 #include <thread>
 #include <ServerMainThread.h>
-#include <StaticHTTPPackets.h>
-#include <StaticWSPackets.h>
 
 static uint16_t gamePort = 8081;
 static uint16_t socialPort = 8082;
