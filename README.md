@@ -25,7 +25,7 @@ This is currently set up primarily for **Windows** (can build for linux, check p
 > Dependency management is via **vcpkg** (manifest mode). You need to build with the vcpkg toolchain file enabled.
 
 You can follow this tutorial if you want (make sure to read about the configuration first)
-
+NOTE: as of 7th May 2026 you no longer need a steam api key or an auth.json. you only need an auth.json if you wish to use vivox voice and chat backend.
 https://youtu.be/j1DOWg2PbLA
 
 ## Clone
@@ -34,23 +34,16 @@ git clone https://github.com/astroval0/pragmabackend
 cd pragmabackend
 git submodule update --init --recursive
 
-## Configuration (`auth.json`)
+### Vivox-Voice Configuration
 
-Create an `auth.json` in the **repo root**:
+If you'd like to set up Vivox-Voice chat server (Spectre's text and voice chat backend)
 
-```json
-{
-  "steamApiKey": "<YOUR STEAM WEB API KEY HERE https://steamcommunity.com/dev/apikey >"
-}
-```
+You'll need to make an auth.json at the repo root and fill it out with the respective values.
 
-### Vivox-Voice branch
-
-If you're on the `vivox reimplementation` branch and you actually want to use voice / text, extend `auth.json` with:
+https://unity.com/products/vivox
 
 ```json
 {
-  "steamApiKey": "<...>",
   "vivox": {
     "server": "",
     "domain": "",
@@ -117,7 +110,7 @@ PRs welcome. If you contribute:
 * * if your absolute path is `E:\dev\spectre\srv\pragmabackend` then your toolchain file path is `E:\dev\spectre\srv\pragmabackend\vcpkg\scripts\buildsystems\vcpkg.cmake`
  
 **failed to open InventoryStore file**
-* you didnt follow the instructions properly so it couldnt build fully.
+* you didn't follow the instructions properly so it couldn't build fully.
 
 **Port already in use**
 
@@ -125,3 +118,6 @@ PRs welcome. If you contribute:
 
 **failed to read PlayerConfigData in SavePlayerDataProcessor**
 * Press WIN+R -> type in `%localappdata%` -> press enter -> delete the `Spectre` folder.
+
+### Using a published release
+You may download a public build of the backend from the [latest release](https://github.com/SpectreRevival/pragmabackend/releases/latest). This will contain a build for windows, linux and a docker container image. For windows or linux, simply extract the .zip and run the executable named pragmabackend inside. For the docker container, run `docker image load -i pragmabackend-docker.tar` and then `docker run -d -p 80:80 -p 8081:8081 -p 8082:8082 pragmabackend:latest`

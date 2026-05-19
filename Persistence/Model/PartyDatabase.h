@@ -1,11 +1,15 @@
 #pragma once
-#include "Database.h"
+#include "ProtobufDatabase.h"
 
 #include <CreatePartyRequest.pb.h>
+#include <mutex>
+#include <optional>
 
-class PartyDatabase : public Database {
+class PartyDatabase : public ProtobufDatabase {
   private:
-    static PartyDatabase inst;
+    std::recursive_mutex dbMutex;
+    void DeleteParty(const std::string& partyId);
+    std::optional<Party> TryGetParty(const std::string& partyId);
 
   public:
     static PartyDatabase& Get();
@@ -15,5 +19,7 @@ class PartyDatabase : public Database {
     Party GetParty(const std::string& partyId);
     Party GetPartyByInviteCode(const std::string& inviteCode);
     void SaveParty(const Party& party);
+    void ClearAllParties();
+    void RemovePlayerFromParties(const std::string& playerId);
     static std::string SerializePartyToString(const PartyResponse& partyRes);
 };
